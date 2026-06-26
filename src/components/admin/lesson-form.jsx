@@ -1,0 +1,135 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createLesson, updateLesson } from "@/app/admin/courses/[id]/modules/[moduleId]/actions";
+
+const contentLabels = {
+	VIDEO: { label: "URL de la vidéo", placeholder: "https://youtube.com/watch?v=..." },
+	AUDIO: { label: "URL du fichier audio", placeholder: "https://.../capsule.mp3" },
+	TEXT: { label: "Contenu (Markdown supporté)", placeholder: "# Mon contenu..." },
+	PDF: { label: "URL du PDF", placeholder: "https://.../document.pdf" },
+};
+
+export function LessonForm({ courseId, moduleId, lesson }) {
+	const router = useRouter();
+	const [loading, setLoading] = useState(false);
+	const [type, setType] = useState(lesson?.type || "VIDEO");
+	const isEdit = !!lesson;
+
+	async function handleSubmit(e) {
+		e.preventDefault();
+		setLoading(true);
+
+		const fd = new FormData(e.currentTarget);
+		const result = isEdit ? await updateLesson(courseId, moduleId, lesson.id, fd) : await createLesson(courseId, moduleId, fd);
+
+		if (result?.error) {
+			toast.error(result.error);
+			setLoading(false);
+			return;
+		}
+
+		if (isEdit) {
+			toast.success("Leçon mise à jour");
+			router.refresh();
+		}
+		setLoading(false);
+	}
+
+	const contentField = contentLabels[type];
+
+	return (
+		<form
+			onSubmit={handleSubmit}
+			className="space-y-6 max-w-2xl"
+		>
+			<div className="space-y-2">
+				<Label htmlFor="title">Titre de la leçon *</Label>
+				<Input
+					id="title"
+					name="title"
+					defaultValue={lesson?.title}
+					placeholder="Ex: Bienvenue dans AERIA"
+					required
+				/>
+			</div>
+
+			<div className="space-y-2">
+				<Label htmlFor="type">Type *</Label>
+				<Select
+					name="type"
+					value={type}
+					onValueChange={setType}
+				>
+					<SelectTrigger>
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="VIDEO">Vidéo</SelectItem>
+						<SelectItem value="AUDIO">Capsule audio</SelectItem>
+						<SelectItem value="TEXT">Texte / Markdown</SelectItem>
+						<SelectItem value="PDF">Document PDF</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+
+			<div className="space-y-2">
+				<Label htmlFor="content">{contentField.label} *</Label>
+				{type === "TEXT" ? (
+					<Textarea
+						id="content"
+						name="content"
+						defaultValue={lesson?.content}
+						placeholder={contentField.placeholder}
+						rows={12}
+						required
+					/>
+				) : (
+					<Input
+						id="content"
+						name="content"
+						type="url"
+						defaultValue={lesson?.content}
+						placeholder={contentField.placeholder}
+						required
+					/>
+				)}
+			</div>
+
+			<div className="space-y-2">
+				<Label htmlFor="duration">Durée (en secondes)</Label>
+				<Input
+					id="duration"
+					name="duration"
+					type="number"
+					min="0"
+					defaultValue={lesson?.duration || ""}
+					placeholder="Ex: 300 pour 5 min"
+				/>
+			</div>
+
+			<div className="flex gap-3">
+				<Button
+					type="submit"
+					disabled={loading}
+				>
+					{loading ? "Enregistrement..." : isEdit ? "Mettre à jour" : "Créer la leçon"}
+				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					onClick={() => router.push(`/admin/courses/${courseId}/modules/${moduleId}`)}
+				>
+					Annuler
+				</Button>
+			</div>
+		</form>
+	);
+}

@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aeria-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aeria
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: aeria
+    ports:
+      - "5432:5432"
+    volumes:
+      - aeria_pgdata:/var/lib/postgresql/data
+
+volumes:
+  aeria_pgdata:

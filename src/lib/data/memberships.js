@@ -1,0 +1,30 @@
+export const PLANS = [
+	{
+		id: "free",
+		tier: "FREE",
+		name: "Découverte",
+		price: "0",
+		period: "Gratuit",
+		description: "Découvre AERIA en libre accès",
+		features: ["Cours gratuits", "Capsules audio en accès libre", "Création de compte"],
+	},
+	{
+		id: "academy",
+		tier: "ACADEMY",
+		name: "Académie",
+		price: "29",
+		period: "/ mois",
+		description: "Accès illimité à tous les cours AERIA",
+		features: ["Accès à TOUS les cours", "Toutes les capsules audio", "Tests et certificats", "Nouveaux cours inclus", "Annulable à tout moment"],
+		featured: true,
+	},
+	{
+		id: "prime",
+		tier: "PRIME",
+		name: "Prime",
+		price: "49",
+		period: "/ mois",
+		description: "Académie + accompagnement personnalisé",
+		features: ["Tout ce qui est dans Académie", "Sessions de coaching mensuelles", "Support prioritaire", "Contenus exclusifs"],
+	},
+];

@@ -1,0 +1,118 @@
+import { dict } from "@/lib/i18n";
+import { FaInstagram, FaYoutube, FaLinkedin, FaEnvelope } from "react-icons/fa";
+import Logo from "../logo";
+
+export default function Footer({ locale }) {
+	const t = dict[locale].footer;
+
+	return (
+		<footer className="bg-gray-900 text-white pt-20 pb-10">
+			<div className="max-w-7xl mx-auto px-6">
+				<div className="flex justify-between gap-12 mb-16">
+					<div className="md:col-span-4">
+						{/* Logo */}
+						<Logo
+							scrolled={false}
+							locale={locale}
+						/>
+						<p className="text-gray-400 text-sm leading-relaxed mb-6 whitespace-pre-line text-center md:text-left">{t.tagline}</p>
+						<div className="flex items-center justify-center md:justify-start gap-4">
+							<a
+								href="#"
+								aria-label="Instagram"
+								className="text-gray-500 hover:text-yellow-400 transition-colors"
+							>
+								<FaInstagram size={18} />
+							</a>
+							<a
+								href="#"
+								aria-label="YouTube"
+								className="text-gray-500 hover:text-yellow-400 transition-colors"
+							>
+								<FaYoutube size={18} />
+							</a>
+							<a
+								href="#"
+								aria-label="LinkedIn"
+								className="text-gray-500 hover:text-yellow-400 transition-colors"
+							>
+								<FaLinkedin size={18} />
+							</a>
+							<a
+								href="#"
+								aria-label="Email"
+								className="text-gray-500 hover:text-yellow-400 transition-colors"
+							>
+								<FaEnvelope size={18} />
+							</a>
+						</div>
+					</div>
+					<div className="md:col-span-8 hidden md:grid grid-cols-1 sm:grid-cols-3 gap-24">
+						<div>
+							<p className="text-[0.62rem] tracking-widest uppercase text-yellow-400 mb-2">{t.academy}</p>
+							<ul className="space-y-0.5">
+								{t.links.academy.map((item) => (
+									<li key={item}>
+										<a
+											href="#"
+											className="text-gray-400 text-xs hover:text-white transition-colors"
+										>
+											{item}
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+						<div>
+							<p className="text-[0.62rem] tracking-widest uppercase text-yellow-400 mb-2">{locale === "en" ? "Explore" : "Explorer"}</p>
+							<ul className="space-y-0.5">
+								{t.links.explore.map((item) => (
+									<li key={item}>
+										<a
+											href="#"
+											className="text-gray-400 text-xs hover:text-white transition-colors"
+										>
+											{item}
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+						<div>
+							<p className="text-[0.62rem] tracking-widest uppercase text-yellow-400 mb-2">{locale === "en" ? "Company" : "Compagnie"}</p>
+							<ul className="space-y-0.5">
+								{t.links.company.map((item) => (
+									<li key={item}>
+										<a
+											href="#"
+											className="text-gray-400 text-xs hover:text-white transition-colors"
+										>
+											{item}
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+					<p className="text-gray-600 text-xs">{t.copyright}</p>
+					<div className="flex items-center gap-6">
+						<a
+							href="#"
+							className="text-gray-600 text-xs hover:text-gray-400 transition-colors"
+						>
+							{t.privacy}
+						</a>
+						<a
+							href="#"
+							className="text-gray-600 text-xs hover:text-gray-400 transition-colors"
+						>
+							{t.terms}
+						</a>
+					</div>
+				</div>
+			</div>
+		</footer>
+	);
+}
