@@ -47,7 +47,7 @@ async function main() {
 			title: "Introduction à AERIA",
 			description: "Découvre les fondamentaux de la méthode AERIA à travers ce cours complet avec vidéos, capsules audio et tests de validation.",
 			thumbnail: "https://placehold.co/600x400/png?text=AERIA",
-			price: 4900, // 49.00 €
+			price: 4900, // 49.00 $
 			published: true,
 			modules: {
 				create: [

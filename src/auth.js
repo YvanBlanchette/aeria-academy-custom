@@ -30,15 +30,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 	],
 	callbacks: {
 		async jwt({ token, user, trigger }) {
-			// 1. Initial sign-in : on populate le token avec les données du user
 			if (user) {
 				token.id = user.id;
 				token.role = user.role;
 				token.membership = user.membership;
 			}
 
-			// 2. Refresh demandé explicitement (après upgrade Stripe par exemple)
-			//    ou si le token est ancien et n'a pas encore membership
+			// Refresh demandé explicitement (après paiement Stripe)
 			if (trigger === "update" || (token.id && token.membership === undefined)) {
 				const dbUser = await prisma.user.findUnique({
 					where: { id: token.id },

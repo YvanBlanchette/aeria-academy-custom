@@ -15,11 +15,24 @@ async function requireAdmin() {
 	return session;
 }
 
+// Helper : valide qu'une chaîne est une URL absolue (http(s)://...)
+function isValidUrl(str) {
+	try {
+		new URL(str);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+// Schéma partagé entre create et update
 const courseSchema = z.object({
 	title: z.string().min(3, "Le titre doit faire au moins 3 caractères"),
 	description: z.string().min(10, "Description trop courte"),
 	price: z.coerce.number().int().min(0, "Prix invalide"),
-	thumbnail: z.string().url("URL d'image invalide").or(z.literal("")),
+	thumbnail: z
+		.string()
+		.refine((val) => val === "" || val.startsWith("/uploads/") || isValidUrl(val), { message: "Doit être une URL valide ou un chemin /uploads/" }),
 });
 
 export async function createCourse(formData) {
@@ -39,7 +52,6 @@ export async function createCourse(formData) {
 	const { title, description, price, thumbnail } = parsed.data;
 	let slug = slugify(title);
 
-	// Assurer l'unicité du slug
 	const existing = await prisma.course.findUnique({ where: { slug } });
 	if (existing) {
 		slug = `${slug}-${Date.now()}`;
@@ -49,7 +61,7 @@ export async function createCourse(formData) {
 		data: {
 			title,
 			description,
-			price: Math.round(price * 100), // converti en cents
+			price: Math.round(price * 100),
 			thumbnail: thumbnail || null,
 			slug,
 			published: false,

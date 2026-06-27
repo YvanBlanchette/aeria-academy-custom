@@ -2,6 +2,8 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Suspense } from "react";
+import { SessionRefresher } from "@/components/users/session-refresher";
 
 export const metadata = {
 	title: "Bienvenue dans AERIA Academy !",
@@ -18,6 +20,10 @@ export default function SuccessPage() {
 						<p className="text-muted-foreground">Bienvenue à l&apos;Académie de Voyages ÆRIA.</p>
 					</div>
 					<div className="bg-amber-50 text-amber-800 text-sm p-3 rounded-md">⚠️ Si ton accès n&apos;apparaît pas immédiatement, reconnecte-toi.</div>
+					<Suspense fallback={null}>
+						<SessionRefresher />
+					</Suspense>
+
 					<div className="flex flex-col gap-2">
 						<Button
 							asChild

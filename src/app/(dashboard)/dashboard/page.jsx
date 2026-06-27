@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { PortalReturnRefresher } from "@/components/users/portal-return-refresher";
 
 export default async function DashboardPage() {
 	const session = await auth();
@@ -45,6 +46,7 @@ export default async function DashboardPage() {
 
 	return (
 		<div className="container mx-auto p-8 space-y-8">
+			<PortalReturnRefresher />
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-3xl font-bold">Mes cours</h1>

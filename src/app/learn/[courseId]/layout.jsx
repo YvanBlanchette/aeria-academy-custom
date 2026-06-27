@@ -3,21 +3,14 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { canAccessCourse } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 import { LessonSidebar } from "@/components/users/lesson-sidebar";
 
 export default async function LearnLayout({ children, params }) {
 	const { courseId } = await params;
 	const session = await auth();
-	if (!session) redirect("/login");
-
-	// Vérifier l'inscription
-	const enrollment = await prisma.enrollment.findUnique({
-		where: {
-			userId_courseId: { userId: session.user.id, courseId },
-		},
-	});
-	if (!enrollment) redirect("/dashboard");
+	if (!session) redirect(`/login?callbackUrl=/learn/${courseId}`);
 
 	const course = await prisma.course.findUnique({
 		where: { id: courseId },
@@ -33,13 +26,26 @@ export default async function LearnLayout({ children, params }) {
 	});
 	if (!course) notFound();
 
-	// Récupère la progression de l'utilisateur
+	// Check d'accès
+	const access = await canAccessCourse(session.user, course);
+	if (!access.allowed) {
+		redirect(`/courses/${course.slug}`);
+	}
+
+	// Crée l'enrollment automatiquement si membre/admin sans enrollment
+	// (ils ont accès, mais pas encore d'historique de progression)
+	await prisma.enrollment.upsert({
+		where: {
+			userId_courseId: { userId: session.user.id, courseId },
+		},
+		update: {},
+		create: { userId: session.user.id, courseId },
+	});
+
 	const progress = await prisma.lessonProgress.findMany({
 		where: {
 			userId: session.user.id,
-			lesson: {
-				module: { courseId },
-			},
+			lesson: { module: { courseId } },
 			completed: true,
 		},
 		select: { lessonId: true },

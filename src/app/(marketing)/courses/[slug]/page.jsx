@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, Users, Headphones, Video, FileText, FileType, ListChecks } from "lucide-react";
+import { BookOpen, Users, Headphones, Video, FileText, FileType, ListChecks, Lock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { canAccessCourse, accessBlockedInfo } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,8 +31,10 @@ export default async function CourseDetailPage({ params }) {
 
 	if (!course || !course.published) notFound();
 
-	const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
+	const totalLessons = course.modules.reduce((s, m) => s + m.lessons.length, 0);
 
+	// Check d'accès et d'inscription
+	const access = await canAccessCourse(session?.user, course);
 	let isEnrolled = false;
 	if (session) {
 		const enrollment = await prisma.enrollment.findUnique({
@@ -42,8 +45,10 @@ export default async function CourseDetailPage({ params }) {
 		isEnrolled = !!enrollment;
 	}
 
+	const blockedInfo = !access.allowed ? accessBlockedInfo(access.reason, course) : null;
+
 	return (
-		<div className="container mx-auto px-4 py-12">
+		<div className="container mx-auto px-4 pt-32 pb-12">
 			<div className="grid gap-8 lg:grid-cols-3">
 				<div className="lg:col-span-2 space-y-8">
 					<div>
@@ -99,9 +104,10 @@ export default async function CourseDetailPage({ params }) {
 				</div>
 
 				<div className="lg:col-span-1">
-					<Card className="sticky top-4">
+					<Card className="sticky top-24">
 						{course.thumbnail ? (
 							<div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
+								{/* eslint-disable-next-line @next/next/no-img-element */}
 								<img
 									src={course.thumbnail}
 									alt={course.title}
@@ -129,7 +135,7 @@ export default async function CourseDetailPage({ params }) {
 								>
 									<Link href={`/learn/${course.id}`}>Continuer le cours</Link>
 								</Button>
-							) : session ? (
+							) : access.allowed ? (
 								<form
 									action={async () => {
 										"use server";
@@ -141,17 +147,28 @@ export default async function CourseDetailPage({ params }) {
 										className="w-full"
 										size="lg"
 									>
-										{course.price === 0 ? "S'inscrire gratuitement" : "S'inscrire au cours"}
+										{course.price === 0 ? "Commencer gratuitement" : "Accéder au cours"}
 									</Button>
 								</form>
 							) : (
-								<Button
-									asChild
-									className="w-full"
-									size="lg"
-								>
-									<Link href={`/login?callbackUrl=/courses/${course.slug}`}>Connexion pour s&apos;inscrire</Link>
-								</Button>
+								<div className="space-y-3">
+									<div className="rounded-md bg-muted p-3 text-sm">
+										<div className="flex items-start gap-2">
+											<Lock className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
+											<div>
+												<p className="font-medium">{blockedInfo.title}</p>
+												<p className="text-xs text-muted-foreground mt-1">{blockedInfo.message}</p>
+											</div>
+										</div>
+									</div>
+									<Button
+										asChild
+										className="w-full"
+										size="lg"
+									>
+										<Link href={blockedInfo.cta.href}>{blockedInfo.cta.label}</Link>
+									</Button>
+								</div>
 							)}
 						</CardContent>
 					</Card>

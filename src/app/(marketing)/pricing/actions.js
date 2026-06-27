@@ -94,8 +94,6 @@ export async function createPortalSession() {
 
 	const portal = await stripe.billingPortal.sessions.create({
 		customer: dbUser.stripeCustomerId,
-		return_url: `${APP_URL}/dashboard`,
+		return_url: `${APP_URL}/dashboard?refresh=1`,
 	});
-
-	redirect(portal.url);
 }

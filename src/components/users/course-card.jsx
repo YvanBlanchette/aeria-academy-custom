@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen, Users, Crown, Lock } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export function CourseCard({ course }) {
+export function CourseCard({ course, userHasAccess = false, userIsEnrolled = false }) {
 	return (
 		<Link href={`/courses/${course.slug}`}>
 			<Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
 				{course.thumbnail ? (
 					<div className="aspect-video w-full overflow-hidden bg-muted">
+						{/* eslint-disable-next-line @next/next/no-img-element */}
 						<img
 							src={course.thumbnail}
 							alt={course.title}
@@ -35,7 +36,25 @@ export function CourseCard({ course }) {
 							{course._count.enrollments}
 						</span>
 					</div>
-					<Badge variant={course.price === 0 ? "secondary" : "default"}>{course.price === 0 ? "Gratuit" : `${(course.price / 100).toFixed(2)} €`}</Badge>
+					{userIsEnrolled ? (
+						<Badge variant="secondary">Inscrit</Badge>
+					) : userHasAccess ? (
+						<Badge
+							variant="default"
+							className="gap-1"
+						>
+							<Crown className="h-3 w-3" /> Accès inclus
+						</Badge>
+					) : course.price === 0 ? (
+						<Badge variant="secondary">Gratuit</Badge>
+					) : (
+						<Badge
+							variant="default"
+							className="gap-1"
+						>
+							<Lock className="h-3 w-3" /> {(course.price / 100).toFixed(2)} €
+						</Badge>
+					)}
 				</CardFooter>
 			</Card>
 		</Link>

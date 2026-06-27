@@ -22,19 +22,21 @@ export function CourseForm({ course }) {
 		setLoading(true);
 
 		const formData = new FormData(e.currentTarget);
+		formData.set("thumbnail", thumbnail || "");
+
 		const result = isEdit ? await updateCourse(course.id, formData) : await createCourse(formData);
+
+		setLoading(false);
 
 		if (result?.error) {
 			toast.error(result.error);
-			setLoading(false);
 			return;
 		}
 
-		if (isEdit) {
-			toast.success("Cours mis à jour");
+		if (result?.success) {
+			toast.success(isEdit ? "Cours mis à jour" : "Cours créé");
 			router.refresh();
 		}
-		setLoading(false);
 	}
 
 	return (

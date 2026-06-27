@@ -86,7 +86,7 @@ export function ModuleManager({ course }) {
 	}
 
 	return (
-		<Card className="h-full w-full">
+		<Card className="h-full w-full chadow-xl">
 			<CardHeader>
 				<div className="flex items-center justify-between">
 					<div>
