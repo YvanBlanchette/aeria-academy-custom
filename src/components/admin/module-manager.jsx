@@ -86,7 +86,7 @@ export function ModuleManager({ course }) {
 	}
 
 	return (
-		<Card className="h-full w-full chadow-xl">
+		<Card className="h-full w-full shadow-xl overflow-y-auto rounded-sm">
 			<CardHeader>
 				<div className="flex items-center justify-between">
 					<div>
@@ -98,7 +98,7 @@ export function ModuleManager({ course }) {
 						onOpenChange={setAddOpen}
 					>
 						<DialogTrigger asChild>
-							<Button>+ Ajouter un module</Button>
+							<Button>+ Ajouter Module</Button>
 						</DialogTrigger>
 						<DialogContent>
 							<form onSubmit={handleCreate}>

@@ -476,7 +476,7 @@ export const dict = {
 				},
 				{
 					icon: globeIcon,
-					title: "Expert en Destinations",
+					title: "Expert des Destinations",
 					desc: "Approfondissez votre connaissance des destinations les plus prisées au monde.",
 				},
 				{
@@ -512,7 +512,7 @@ export const dict = {
 				// ── Programme Spécialiste en Croisières ──
 				{
 					slug: "cruises",
-					title: "Programme Spécialiste en Croisières",
+					title: "Spécialiste en Croisières",
 					img: "/images/cruises-poster.webp",
 					video: "/videos/cruises.webm",
 					subtitle: "Devenez l'expert de référence à qui vos clients font confiance quand vient le temps de prendre le large.",
@@ -537,7 +537,7 @@ export const dict = {
 				// ── Programme Expert en Destinations ──
 				{
 					slug: "destinations",
-					title: "Programme Expert en Destinations",
+					title: "Expert des Destinations",
 					img: "/images/destinations-poster.webp",
 					video: "/videos/destinations.webm",
 					subtitle: "Faites du monde entier votre champ d'expertise.",
@@ -547,12 +547,12 @@ export const dict = {
 						list: {
 							title: "Ce que vous apprendrez :",
 							items: [
-								"Les régions clés d'Europe, des Amériques, d'Afrique, d'Asie, et d'Océanie",
-								"Les destinations incontournables et les meilleurs trésors cachés",
-								"La saisonnalité, le climat, et le meilleur moment pour voyager",
-								"L'étiquette, les coutumes locales, et les réalités pratiques du voyage",
-								"Les exigences d'entrée, les visas, et les informations de sécurité",
-								"Comment concevoir des itinéraires qui ont une touche personnelle",
+								"Europe, Amériques, Afrique, Asie, Océanie, Pôles",
+								"Les destinations incontournables et trésors cachés",
+								"La saisonnalité et le meilleur moment pour voyager",
+								"Les coutumes locales, et les réalités du voyage",
+								"Les exigences d'entrée, et les informations de sécurité",
+								"Comment concevoir des itinéraires personnalisés",
 							],
 						},
 						note: "Pour qui : les conseillers qui veulent se spécialiser par région ou bâtir une expertise mondiale étendue qui leur permet de vendre n'importe où dans le monde avec confiance.",
@@ -562,7 +562,7 @@ export const dict = {
 				// ── Programme Spécialiste en Circuits ──
 				{
 					slug: "tours",
-					title: "Programme Spécialiste en Circuits",
+					title: "Spécialiste en Circuits",
 					img: "/images/tours-poster.webp",
 					video: "/videos/tours.webm",
 					subtitle: "Maîtrisez les partenariats qui font les voyages d'exception.",

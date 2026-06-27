@@ -40,7 +40,7 @@ export function CourseForm({ course }) {
 	}
 
 	return (
-		<Card className="w-full max-w-xl shadow-md p-5">
+		<Card className="w-full max-w-xl shadow-md p-5 overflow-y-auto rounded-sm">
 			<CardHeader>
 				<h2 className="text-xl font-bold">{isEdit ? "Modifier le cours" : "Créer un cours"}</h2>
 				<p className="text-muted-foreground tracking-wider">

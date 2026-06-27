@@ -67,7 +67,7 @@ export default function RegisterPage() {
 		});
 
 		if (signInResult?.ok) {
-			toast.success("Bienvenue dans AERIA Academy !");
+			toast.success("Bienvenue à l'académie de voyages ÆRIA!");
 			router.push("/dashboard");
 			router.refresh();
 		} else {
@@ -88,7 +88,7 @@ export default function RegisterPage() {
 							/>
 						</div>
 						<CardTitle className="text-2xl">Créer votre compte</CardTitle>
-						<CardDescription>Rejoingnez l&apos;Académie de Voyages AERIA</CardDescription>
+						<CardDescription>Rejoingnez l&apos;Académie de Voyages ÆRIA</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-6">
 						<Button

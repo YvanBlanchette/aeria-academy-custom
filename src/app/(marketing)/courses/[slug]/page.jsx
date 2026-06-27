@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, Users, Headphones, Video, FileText, FileType, ListChecks, Lock } from "lucide-react";
+import { BookOpen, Users, Headphones, Video, FileText, FileType, ListChecks, Lock, LucideChevronsDown } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { canAccessCourse, accessBlockedInfo } from "@/lib/access";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { enrollInCourse } from "./actions";
+import Image from "next/image";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const typeIcons = { VIDEO: Video, AUDIO: Headphones, TEXT: FileText, PDF: FileType };
 
@@ -48,82 +50,46 @@ export default async function CourseDetailPage({ params }) {
 	const blockedInfo = !access.allowed ? accessBlockedInfo(access.reason, course) : null;
 
 	return (
-		<div className="container mx-auto px-4 pt-32 pb-12">
-			<div className="grid gap-8 lg:grid-cols-3">
-				<div className="lg:col-span-2 space-y-8">
-					<div>
-						<h1 className="text-4xl font-bold">{course.title}</h1>
-						<p className="mt-4 text-lg text-muted-foreground">{course.description}</p>
-					</div>
-
-					<div className="flex gap-6 text-sm">
-						<span className="flex items-center gap-2">
-							<BookOpen className="h-4 w-4" />
-							{course._count.modules} modules · {totalLessons} leçons
-						</span>
-						<span className="flex items-center gap-2">
-							<Users className="h-4 w-4" />
-							{course._count.enrollments} inscrits
-						</span>
-					</div>
-
-					<div className="space-y-4">
-						<h2 className="text-2xl font-bold">Programme du cours</h2>
-						<div className="space-y-3">
-							{course.modules.map((mod, idx) => (
-								<Card key={mod.id}>
-									<CardContent className="p-4">
-										<p className="font-semibold">
-											Module {idx + 1} : {mod.title}
-										</p>
-										<ul className="mt-2 space-y-1 text-sm">
-											{mod.lessons.map((lesson) => {
-												const Icon = typeIcons[lesson.type];
-												return (
-													<li
-														key={lesson.id}
-														className="flex items-center gap-2 text-muted-foreground"
-													>
-														<Icon className="h-3.5 w-3.5" />
-														{lesson.title}
-													</li>
-												);
-											})}
-											{mod.quiz && (
-												<li className="flex items-center gap-2 text-muted-foreground">
-													<ListChecks className="h-3.5 w-3.5" />
-													Test de validation
-												</li>
-											)}
-										</ul>
-									</CardContent>
-								</Card>
-							))}
-						</div>
-					</div>
-				</div>
-
-				<div className="lg:col-span-1">
-					<Card className="sticky top-24">
+		<div className="container max-w-7xl mx-auto px-4 py-12">
+			<div className="grid gap-8 lg:grid-cols-2">
+				{/* LEFT SIDE */}
+				<div className="">
+					<Card className="sticky top-24 h-full">
 						{course.thumbnail ? (
-							<div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
+							<div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted -translate-y-4">
 								{/* eslint-disable-next-line @next/next/no-img-element */}
-								<img
+								<Image
+									width={1280}
+									height={720}
 									src={course.thumbnail}
 									alt={course.title}
 									className="h-full w-full object-cover"
 								/>
 							</div>
 						) : (
-							<div className="aspect-video w-full rounded-t-lg bg-gradient-to-br from-primary/20 to-primary/5" />
+							<div className="aspect-video w-full rounded-t-lg bg-linear-to-br from-primary/20 to-primary/5" />
 						)}
-						<CardContent className="space-y-4 p-6">
+						<CardContent className="space-y-4 px-6">
+							<div>
+								<h1 className="text-3xl font-bold">{course.title}</h1>
+								<p className="mt-4 text-sm text-muted-foreground">{course.description}</p>
+							</div>
+							<div className="flex gap-6 text-sm">
+								<span className="flex items-center gap-2">
+									<BookOpen className="h-4 w-4" />
+									{course._count.modules} modules · {totalLessons} leçons
+								</span>
+								<span className="flex items-center gap-2">
+									<Users className="h-4 w-4" />
+									{course._count.enrollments} inscrits
+								</span>
+							</div>
 							<div>
 								<Badge
 									variant={course.price === 0 ? "secondary" : "default"}
 									className="mb-2"
 								>
-									{course.price === 0 ? "Gratuit" : `${(course.price / 100).toFixed(2)} €`}
+									{course.price === 0 || isEnrolled ? "Inclus" : `${(course.price / 100).toFixed(2)} $`}
 								</Badge>
 							</div>
 
@@ -172,6 +138,57 @@ export default async function CourseDetailPage({ params }) {
 							)}
 						</CardContent>
 					</Card>
+				</div>
+
+				{/* RIGHT SIDE */}
+				<div className="space-y-8">
+					<div className="space-y-4">
+						<h2 className="text-3xl font-bold">Programme du cours</h2>
+						<div className="space-y-3">
+							{course.modules.map((mod, idx) => (
+								<Card key={mod.id}>
+									<CardContent className="px-4">
+										<Collapsible className="rounded-md">
+											<CollapsibleTrigger
+												asChild
+												className="bg-white"
+											>
+												<Button
+													variant="ghost"
+													className="group w-full bg-white"
+												>
+													<p className="font-semibold">{mod.title}</p>
+													<LucideChevronsDown className="ml-auto group-data-[state=open]:rotate-180" />
+												</Button>
+											</CollapsibleTrigger>
+											<CollapsibleContent className="flex flex-col items-start gap-2 px-2.5 text-sm bg-white">
+												<ul className="mt-2 space-y-1 text-sm">
+													{mod.lessons.map((lesson) => {
+														const Icon = typeIcons[lesson.type];
+														return (
+															<li
+																key={lesson.id}
+																className="flex items-center gap-2 text-muted-foreground"
+															>
+																<Icon className="h-3.5 w-3.5" />
+																{lesson.title}
+															</li>
+														);
+													})}
+													{mod.quiz && (
+														<li className="flex items-center gap-2 text-muted-foreground">
+															<ListChecks className="h-3.5 w-3.5" />
+															Test de validation
+														</li>
+													)}
+												</ul>
+											</CollapsibleContent>
+										</Collapsible>
+									</CardContent>
+								</Card>
+							))}
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

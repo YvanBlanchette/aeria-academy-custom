@@ -45,12 +45,12 @@ export default async function DashboardPage() {
 	);
 
 	return (
-		<div className="container mx-auto p-8 space-y-8">
+		<div className="container max-w-7xl mx-auto p-8 space-y-8">
 			<PortalReturnRefresher />
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-3xl font-bold">Mes cours</h1>
-					<p className="text-muted-foreground">Bienvenue {session.user.name} 👋</p>
+					<p className="text-muted-foreground">Bienvenue {session.user.name}</p>
 				</div>
 			</div>
 
@@ -71,7 +71,7 @@ export default async function DashboardPage() {
 							className="overflow-hidden"
 						>
 							{enr.course.thumbnail ? (
-								<div className="aspect-video w-full bg-muted">
+								<div className="aspect-video w-full bg-muted -translate-y-4">
 									<Image
 										width={600}
 										height={400}
@@ -85,7 +85,7 @@ export default async function DashboardPage() {
 							)}
 							<CardContent className="space-y-4 p-6">
 								<div>
-									<h3 className="font-bold line-clamp-2">{enr.course.title}</h3>
+									<h3 className="text-xl font-bold line-clamp-2">{enr.course.title}</h3>
 								</div>
 								<div className="space-y-1.5">
 									<div className="flex justify-between text-xs text-muted-foreground">

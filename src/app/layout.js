@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata = {
 	title: "AERIA Voyages Academy",
-	description: "Plateforme d'apprentissage AERIA Voyages",
+	description: "Plateforme d'apprentissage ÆRIA Voyages",
 };
 
 export default function RootLayout({ children }) {

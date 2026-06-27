@@ -5,7 +5,7 @@ export const PLANS = [
 		name: "Découverte",
 		price: "0",
 		period: "Gratuit",
-		description: "Découvre AERIA en libre accès",
+		description: "Découvre l'académie ÆRIA Voyages en libre accès",
 		features: ["Cours gratuits", "Capsules audio en accès libre", "Création de compte"],
 	},
 	{
@@ -14,7 +14,7 @@ export const PLANS = [
 		name: "Académie",
 		price: "29",
 		period: "/ mois",
-		description: "Accès illimité à tous les cours AERIA",
+		description: "Accès illimité à tous les cours de l&apos;académie de voyages ÆRIA",
 		features: ["Accès à TOUS les cours", "Toutes les capsules audio", "Tests et certificats", "Nouveaux cours inclus", "Annulable à tout moment"],
 		featured: true,
 	},

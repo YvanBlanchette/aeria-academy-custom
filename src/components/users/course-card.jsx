@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 export function CourseCard({ course, userHasAccess = false, userIsEnrolled = false }) {
 	return (
 		<Link href={`/courses/${course.slug}`}>
-			<Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
+			<Card className="h-full overflow-hidden transition-shadow hover:shadow-lg flex flex-col justify-between">
 				{course.thumbnail ? (
-					<div className="aspect-video w-full overflow-hidden bg-muted">
+					<div className="aspect-video w-full overflow-hidden bg-muted -translate-y-4">
 						{/* eslint-disable-next-line @next/next/no-img-element */}
 						<img
 							src={course.thumbnail}
@@ -17,12 +17,10 @@ export function CourseCard({ course, userHasAccess = false, userIsEnrolled = fal
 						/>
 					</div>
 				) : (
-					<div className="aspect-video w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+					<div className="aspect-video w-full bg-linear-to-br from-primary/20 to-primary/5" />
 				)}
-				<CardHeader>
+				<CardContent className="space-y-2 mb-auto">
 					<CardTitle className="line-clamp-2">{course.title}</CardTitle>
-				</CardHeader>
-				<CardContent>
 					<p className="line-clamp-3 text-sm text-muted-foreground">{course.description}</p>
 				</CardContent>
 				<CardFooter className="flex items-center justify-between">
@@ -52,7 +50,7 @@ export function CourseCard({ course, userHasAccess = false, userIsEnrolled = fal
 							variant="default"
 							className="gap-1"
 						>
-							<Lock className="h-3 w-3" /> {(course.price / 100).toFixed(2)} €
+							<Lock className="h-3 w-3" /> {(course.price / 100).toFixed(2)} $
 						</Badge>
 					)}
 				</CardFooter>

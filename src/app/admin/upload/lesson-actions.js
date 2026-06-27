@@ -1,0 +1,74 @@
+"use server";
+
+import { writeFile, mkdir } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
+import { randomUUID } from "crypto";
+import { auth } from "@/auth";
+
+// Configurations par type de fichier
+const FILE_CONFIGS = {
+	PDF: {
+		allowedMimes: ["application/pdf"],
+		maxSize: 20 * 1024 * 1024, // 20 MB
+		subdir: "pdfs",
+	},
+	AUDIO: {
+		allowedMimes: ["audio/mpeg", "audio/mp4", "audio/wav", "audio/ogg", "audio/webm"],
+		maxSize: 50 * 1024 * 1024, // 50 MB
+		subdir: "audio",
+	},
+	VIDEO: {
+		allowedMimes: ["video/mp4", "video/webm", "video/quicktime"],
+		maxSize: 500 * 1024 * 1024, // 500 MB
+		subdir: "video",
+	},
+};
+
+export async function uploadLessonFile(formData) {
+	const session = await auth();
+	if (!session || session.user.role !== "ADMIN") {
+		return { error: "Non autorisé" };
+	}
+
+	const file = formData.get("file");
+	const lessonType = formData.get("type"); // "PDF" | "AUDIO" | "VIDEO"
+
+	if (!file || typeof file === "string") {
+		return { error: "Aucun fichier reçu" };
+	}
+
+	const config = FILE_CONFIGS[lessonType];
+	if (!config) {
+		return { error: `Type de fichier non supporté : ${lessonType}` };
+	}
+
+	if (!config.allowedMimes.includes(file.type)) {
+		return {
+			error: `Format invalide pour ${lessonType}. Reçu : ${file.type}`,
+		};
+	}
+
+	if (file.size > config.maxSize) {
+		const maxMb = Math.round(config.maxSize / 1024 / 1024);
+		return { error: `Fichier trop volumineux (${maxMb} MB max)` };
+	}
+
+	const uploadDir = path.join(process.cwd(), "public", "uploads", "lessons", config.subdir);
+	if (!existsSync(uploadDir)) {
+		await mkdir(uploadDir, { recursive: true });
+	}
+
+	const ext = path.extname(file.name) || "";
+	const filename = `${randomUUID()}${ext}`;
+	const filepath = path.join(uploadDir, filename);
+
+	const bytes = await file.arrayBuffer();
+	await writeFile(filepath, Buffer.from(bytes));
+
+	return {
+		url: `/uploads/lessons/${config.subdir}/${filename}`,
+		filename: file.name,
+		size: file.size,
+	};
+}

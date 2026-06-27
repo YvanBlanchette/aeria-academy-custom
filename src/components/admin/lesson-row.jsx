@@ -38,7 +38,7 @@ export function LessonRow({ lesson, courseId, moduleId, isFirst, isLast }) {
 	}
 
 	return (
-		<li className="flex items-center gap-2 rounded-md border p-3">
+		<li className="flex items-center gap-2 rounded-md border py-3 px-4 bg-white shadow-sm">
 			<div className="flex flex-col">
 				<Button
 					variant="ghost"

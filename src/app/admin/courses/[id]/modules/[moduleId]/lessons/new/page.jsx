@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { LessonForm } from "@/components/admin/lesson-form";
+import DashboardLayoutRight from "@/components/dashboard-layout-right";
 
 export default async function NewLessonPage({ params }) {
 	const { id: courseId, moduleId } = await params;
@@ -13,20 +14,16 @@ export default async function NewLessonPage({ params }) {
 	if (!mod || mod.courseId !== courseId) notFound();
 
 	return (
-		<div className="space-y-6">
-			<div>
-				<Link
-					href={`/admin/courses/${courseId}/modules/${moduleId}`}
-					className="text-sm text-muted-foreground hover:underline"
-				>
-					← {mod.title}
-				</Link>
-				<h1 className="mt-2 text-3xl font-bold">Nouvelle leçon</h1>
-			</div>
+		<DashboardLayoutRight
+			title="Nouvelle leçon"
+			subtitle="Ajouter une nouvelle leçon"
+			btnLabel="← Retour aux modules"
+			btnLink={`/admin/courses/${courseId}/modules/${moduleId}`}
+		>
 			<LessonForm
 				courseId={courseId}
 				moduleId={moduleId}
 			/>
-		</div>
+		</DashboardLayoutRight>
 	);
 }

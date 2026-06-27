@@ -20,25 +20,12 @@ export function AdminSidebar({ user }) {
 	const pathname = usePathname();
 
 	return (
-		<aside className="flex h-screen w-64 flex-col border-r bg-card shadow-md">
-			<div className="border-b p-6 h-22.5">
-				<Link
-					href="/"
-					className="flex items-center gap-2"
-				>
-					<Image
-						src="/images/aeria-icon.svg"
-						alt="ÆRIA Voyages Académie"
-						width={35}
-						height={35}
-						className="object-contain"
-					/>
-					<div className="flex flex-col transition-colors duration-300 text-gray-900">
-						<p className="font-display font-semibold tracking-widest -mb-0.5 uppercase text-md">ÆRIA Voyages</p>
-						<span className="h-[0.5px] w-full bg-[#9a6f14]" />
-						<p className="font-display tracking-widest uppercase text-sm font-medium opacity-80">Académie</p>
-					</div>
-				</Link>
+		<aside className="flex h-screen w-80 flex-col border-r bg-card shadow-md">
+			<div className="border-b p-6 h-22.5 flex items-center justify-center">
+				<Logo
+					locale="fr"
+					scrolled
+				/>
 			</div>
 
 			<nav className="flex-1 space-y-1 p-3">

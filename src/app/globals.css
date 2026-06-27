@@ -149,7 +149,6 @@
 	text-transform: uppercase;
 	color: oklch(68.1% 0.162 75.834);
 	font-weight: 700;
-	text-shadow: 1px 1px 1px var(--charcoal);
 }
 
 .text-shadow {

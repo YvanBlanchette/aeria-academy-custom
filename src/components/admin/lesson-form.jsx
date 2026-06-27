@@ -9,16 +9,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createLesson, updateLesson } from "@/app/admin/courses/[id]/modules/[moduleId]/actions";
+import { LessonFileUpload } from "../ui/lesson-file-upload";
 
 const contentLabels = {
-	VIDEO: { label: "URL de la vidéo", placeholder: "https://youtube.com/watch?v=..." },
-	AUDIO: { label: "URL du fichier audio", placeholder: "https://.../capsule.mp3" },
+	VIDEO: { label: "Vidéo (URL YouTube/Vimeo ou upload)", placeholder: "https://youtube.com/watch?v=..." },
+	AUDIO: { label: "Fichier audio (URL ou upload)", placeholder: "https://.../capsule.mp3" },
 	TEXT: { label: "Contenu (Markdown supporté)", placeholder: "# Mon contenu..." },
-	PDF: { label: "URL du PDF", placeholder: "https://.../document.pdf" },
+	PDF: { label: "Document PDF (URL ou upload)", placeholder: "https://.../document.pdf" },
 };
 
 export function LessonForm({ courseId, moduleId, lesson }) {
 	const router = useRouter();
+	const [content, setContent] = useState(lesson?.content || "");
 	const [loading, setLoading] = useState(false);
 	const [type, setType] = useState(lesson?.type || "VIDEO");
 	const isEdit = !!lesson;
@@ -28,6 +30,8 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 		setLoading(true);
 
 		const fd = new FormData(e.currentTarget);
+		fd.set("content", content);
+
 		const result = isEdit ? await updateLesson(courseId, moduleId, lesson.id, fd) : await createLesson(courseId, moduleId, fd);
 
 		if (result?.error) {
@@ -48,7 +52,7 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="space-y-6 max-w-2xl"
+			className="space-y-6 w-full"
 		>
 			<div className="space-y-2">
 				<Label htmlFor="title">Titre de la leçon *</Label>
@@ -58,6 +62,7 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 					defaultValue={lesson?.title}
 					placeholder="Ex: Bienvenue dans AERIA"
 					required
+					className="bg-neutral-50 shadow-inner"
 				/>
 			</div>
 
@@ -68,7 +73,7 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 					value={type}
 					onValueChange={setType}
 				>
-					<SelectTrigger>
+					<SelectTrigger className="bg-neutral-50 shadow-inner">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -82,23 +87,24 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 
 			<div className="space-y-2">
 				<Label htmlFor="content">{contentField.label} *</Label>
+
 				{type === "TEXT" ? (
 					<Textarea
 						id="content"
 						name="content"
-						defaultValue={lesson?.content}
+						value={content}
+						onChange={(e) => setContent(e.target.value)}
 						placeholder={contentField.placeholder}
 						rows={12}
 						required
+						className="bg-neutral-50 shadow-inner"
 					/>
 				) : (
-					<Input
-						id="content"
+					<LessonFileUpload
+						type={type}
+						value={content}
+						onChange={setContent}
 						name="content"
-						type="url"
-						defaultValue={lesson?.content}
-						placeholder={contentField.placeholder}
-						required
 					/>
 				)}
 			</div>
@@ -112,6 +118,7 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 					min="0"
 					defaultValue={lesson?.duration || ""}
 					placeholder="Ex: 300 pour 5 min"
+					className="bg-neutral-50 shadow-inner"
 				/>
 			</div>
 

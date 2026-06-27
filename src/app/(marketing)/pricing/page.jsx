@@ -9,7 +9,7 @@ import { PLANS } from "@/lib/data/memberships";
 import Image from "next/image";
 
 export const metadata = {
-	title: "Abonnements | AERIA Academy",
+	title: "Abonnements | ÆRIA Voyages Academy",
 };
 
 export default async function PricingPage({ searchParams }) {
@@ -22,7 +22,7 @@ export default async function PricingPage({ searchParams }) {
 		<div className="container mx-auto px-4 py-16">
 			<div className="text-center space-y-4 mb-12">
 				<h1 className="text-4xl md:text-5xl font-bold">Choisis ton plan</h1>
-				<p className="text-lg text-muted-foreground max-w-2xl mx-auto">Accède à tous les cours AERIA et progresse à ton rythme. Sans engagement.</p>
+				<p className="text-lg text-muted-foreground max-w-2xl mx-auto">Accède à tous les cours ÆRIA et progresse à ton rythme. Sans engagement.</p>
 				{canceled && <p className="text-sm text-amber-700 bg-amber-50 inline-block px-4 py-2 rounded-md">Paiement annulé. Tu peux réessayer à tout moment.</p>}
 			</div>
 

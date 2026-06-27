@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { SessionRefresher } from "@/components/users/session-refresher";
 
 export const metadata = {
-	title: "Bienvenue dans AERIA Academy !",
+	title: "Bienvenue à ÆRIA  Voyages Academy !",
 };
 
 export default function SuccessPage() {

@@ -6,6 +6,8 @@ import { auth } from "@/auth";
 import { canAccessCourse } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 import { LessonSidebar } from "@/components/users/lesson-sidebar";
+import Image from "next/image";
+import Logo from "@/components/logo";
 
 export default async function LearnLayout({ children, params }) {
 	const { courseId } = await params;
@@ -54,20 +56,14 @@ export default async function LearnLayout({ children, params }) {
 
 	return (
 		<div className="flex h-screen overflow-hidden">
-			<aside className="w-80 border-r bg-card overflow-y-auto flex flex-col">
-				<div className="border-b p-4">
-					<Button
-						asChild
-						variant="ghost"
-						size="sm"
-						className="-ml-2"
-					>
-						<Link href="/dashboard">
-							<ArrowLeft className="mr-1 h-4 w-4" /> Mes cours
-						</Link>
-					</Button>
-					<h2 className="mt-2 font-bold line-clamp-2">{course.title}</h2>
+			<aside className="w-82 border-r bg-card overflow-y-auto flex flex-col shadow-xl">
+				<div className="border-b p-4 h-22.5 flex items-center justify-center">
+					<Logo
+						locale="fr"
+						scrolled
+					/>
 				</div>
+
 				<LessonSidebar
 					course={course}
 					completedSet={Array.from(completedSet)}
