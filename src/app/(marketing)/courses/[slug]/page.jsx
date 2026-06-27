@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, Users, Headphones, Video, FileText, FileType, ListChecks, Lock, LucideChevronsDown } from "lucide-react";
+import { BookOpen, Users, Headphones, Video, FileText, FileType, ListChecks, Lock, LucideChevronsDown, ChevronDownIcon } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { canAccessCourse, accessBlockedInfo } from "@/lib/access";
@@ -54,7 +54,7 @@ export default async function CourseDetailPage({ params }) {
 			<div className="grid gap-8 lg:grid-cols-2">
 				{/* LEFT SIDE */}
 				<div className="">
-					<Card className="sticky top-24 h-full">
+					<Card className="sticky top-24 pb-10 overflow-hidden">
 						{course.thumbnail ? (
 							<div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted -translate-y-4">
 								{/* eslint-disable-next-line @next/next/no-img-element */}
@@ -74,7 +74,7 @@ export default async function CourseDetailPage({ params }) {
 								<h1 className="text-3xl font-bold">{course.title}</h1>
 								<p className="mt-4 text-sm text-muted-foreground">{course.description}</p>
 							</div>
-							<div className="flex gap-6 text-sm">
+							<div className="flex items-center gap-6 text-sm">
 								<span className="flex items-center gap-2">
 									<BookOpen className="h-4 w-4" />
 									{course._count.modules} modules · {totalLessons} leçons
@@ -83,15 +83,11 @@ export default async function CourseDetailPage({ params }) {
 									<Users className="h-4 w-4" />
 									{course._count.enrollments} inscrits
 								</span>
-							</div>
-							<div>
-								<Badge
-									variant={course.price === 0 ? "secondary" : "default"}
-									className="mb-2"
-								>
-									{course.price === 0 || isEnrolled ? "Inclus" : `${(course.price / 100).toFixed(2)} $`}
+								<Badge variant={course.price === 0 ? "secondary" : "default"}>
+									{course.price === 0 || isEnrolled ? "Disponible" : `${(course.price / 100).toFixed(2)} $`}
 								</Badge>
 							</div>
+							<div></div>
 
 							{isEnrolled ? (
 								<Button
@@ -155,10 +151,10 @@ export default async function CourseDetailPage({ params }) {
 											>
 												<Button
 													variant="ghost"
-													className="group w-full bg-white"
+													className="group w-full bg-white  flex justify-between items-center"
 												>
 													<p className="font-semibold">{mod.title}</p>
-													<LucideChevronsDown className="ml-auto group-data-[state=open]:rotate-180" />
+													<ChevronDownIcon className="group-data-[state=open]:rotate-180 h-2 w-2" />
 												</Button>
 											</CollapsibleTrigger>
 											<CollapsibleContent className="flex flex-col items-start gap-2 px-2.5 text-sm bg-white">

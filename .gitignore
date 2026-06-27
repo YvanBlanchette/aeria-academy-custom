@@ -46,3 +46,11 @@ next-env.d.ts
 # Uploads
 /public/uploads
 
+# Database backups
+backup.sql
+*.sql
+*.dump
+
+# Uploads backup
+uploads-backup.zip
+

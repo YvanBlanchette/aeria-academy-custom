@@ -34,6 +34,7 @@ model User {
   image         String?
   role          Role      @default(STUDENT)
   emailVerified DateTime?
+  profile       UserProfile?
   createdAt     DateTime  @default(now())
 
   // 👇 NOUVEAU
@@ -49,6 +50,35 @@ model User {
   progress      LessonProgress[]
   quizAttempts  QuizAttempt[]
   certificates  Certificate[]
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Coordonnées
+  phone       String?
+  address     String?
+  city        String?
+  province    String?  // QC, ON, etc.
+  country     String?  // ISO code: CA, FR, etc.
+  postalCode  String?
+
+  // Profil pro
+  bio         String?  @db.Text     // bio longue (markdown supporté côté frontend)
+  jobTitle    String?               // "Conseillère en voyages chez X"
+  company     String?
+  websiteUrl  String?
+
+  // Liens sociaux (flexible, pas besoin de migration pour ajouter de nouvelles plateformes)
+  socialLinks Json?    // { facebook: "https://...", linkedin: "...", instagram: "...", etc. }
+
+  // Préférences d'affichage
+  publicProfile Boolean @default(false)  // si true, /profile/[username] est public
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Course {

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { LessonForm } from "@/components/admin/lesson-form";
 import DashboardLayoutRight from "@/components/dashboard-layout-right";
+import { Card } from "@/components/ui/card";
 
 export default async function NewLessonPage({ params }) {
 	const { id: courseId, moduleId } = await params;
@@ -20,10 +21,12 @@ export default async function NewLessonPage({ params }) {
 			btnLabel="← Retour aux modules"
 			btnLink={`/admin/courses/${courseId}/modules/${moduleId}`}
 		>
-			<LessonForm
-				courseId={courseId}
-				moduleId={moduleId}
-			/>
+			<Card className="w-full p-6">
+				<LessonForm
+					courseId={courseId}
+					moduleId={moduleId}
+				/>
+			</Card>
 		</DashboardLayoutRight>
 	);
 }
