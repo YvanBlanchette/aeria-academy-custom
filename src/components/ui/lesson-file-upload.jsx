@@ -71,7 +71,7 @@ export function LessonFileUpload({ type, value, onChange, name }) {
 		<div className="space-y-3">
 			{/* Input URL — toujours dispo */}
 			<Input
-				type="url"
+				type="text"
 				value={value || ""}
 				onChange={(e) => onChange(e.target.value)}
 				placeholder={type === "VIDEO" ? "https://youtube.com/watch?v=... ou https://vimeo.com/..." : "https://... ou utilise l'upload ci-dessous"}
