@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 import { HiMenu } from "react-icons/hi";
 
 import { dict } from "@/lib/i18n";
 import { localizedHref } from "@/lib/links";
+import { LOCALE_COOKIE_NAME, DEFAULT_LOCALE } from "@/lib/locale";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import Logo from "../logo";
 import { Button } from "../ui/button";
@@ -19,6 +20,7 @@ const LOCKED_ROUTES = ["/pricing", "/courses", "/about", "/login", "/register", 
 export default function Navbar({ locale = "fr", otherLocale }) {
 	// 1. Hooks
 	const pathname = usePathname();
+	const router = useRouter();
 	const { isLoaded, isSignedIn, isMember } = useCurrentUser();
 
 	const locked = LOCKED_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -46,8 +48,15 @@ export default function Navbar({ locale = "fr", otherLocale }) {
 		return () => window.removeEventListener("scroll", onScroll);
 	}, [locked]);
 
+	const handleLocaleChange = (nextLocale) => {
+		if (!nextLocale || nextLocale === locale) return;
+		document.cookie = `${LOCALE_COOKIE_NAME}=${nextLocale}; path=/; max-age=31536000; SameSite=Lax`;
+		router.refresh();
+		window.location.reload();
+	};
+
 	// 2. Early return APRÈS les hooks
-	const t = dict[locale]?.nav;
+	const t = dict[locale]?.nav ?? dict[DEFAULT_LOCALE]?.nav;
 	if (!t) {
 		console.warn(`Navbar: locale "${locale}" not found in dict`);
 		return null;
@@ -76,7 +85,7 @@ export default function Navbar({ locale = "fr", otherLocale }) {
 
 	return (
 		<header className={clsx("top-0 left-0 right-0 z-50 transition-all duration-300", locked ? "sticky" : "fixed", scrolled ? "bg-white shadow-md" : "")}>
-			<div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
+			<div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
 				<Logo
 					scrolled={scrolled}
 					locale={locale}
@@ -99,7 +108,46 @@ export default function Navbar({ locale = "fr", otherLocale }) {
 					))}
 				</nav>
 
-				<div className="hidden lg:flex items-center gap-2">
+				<div className="hidden lg:flex items-center gap-4">
+					<div
+						className={clsx(
+							"flex items-center rounded-full border p-1 backdrop-blur-sm",
+							scrolled ? "border-gray-200 bg-white/90" : "border-white/20 bg-white/10",
+						)}
+					>
+						<button
+							type="button"
+							className={clsx(
+								"cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+								locale === "fr"
+									? scrolled
+										? "bg-gray-900 text-white"
+										: "bg-white text-gray-900"
+									: scrolled
+										? "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+										: "text-white/80 hover:bg-white/10 hover:text-white",
+							)}
+							onClick={() => handleLocaleChange("fr")}
+						>
+							FR
+						</button>
+						<button
+							type="button"
+							className={clsx(
+								"cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+								locale === "en"
+									? scrolled
+										? "bg-gray-900 text-white"
+										: "bg-white text-gray-900"
+									: scrolled
+										? "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+										: "text-white/80 hover:bg-white/10 hover:text-white",
+							)}
+							onClick={() => handleLocaleChange("en")}
+						>
+							EN
+						</button>
+					</div>
 					{!isLoaded ? (
 						<div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
 					) : isSignedIn ? (

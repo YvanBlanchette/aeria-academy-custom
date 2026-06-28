@@ -1,59 +1,91 @@
 import Link from "next/link";
 import { BookOpen, Users, Crown, Lock } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
-export function CourseCard({ course, userHasAccess = false, userIsEnrolled = false }) {
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { dict } from "@/lib/i18n";
+
+export function CourseCard({
+	course,
+	href,
+	userHasAccess = false,
+	userIsEnrolled = false,
+	children,
+	footer,
+	showDefaultFooter = true,
+	className = "",
+	contentClassName = "",
+	titleClassName = "",
+	descriptionClassName = "",
+	thumbnailClassName = "",
+	imageClassName = "",
+	locale = "fr",
+}) {
+	const courseHref = href ?? `/courses/${course.slug ?? course.id}`;
+	const moduleCount = course._count?.modules ?? 0;
+	const enrollmentCount = course._count?.enrollments ?? 0;
+	const t = dict[locale]?.articles ?? dict.fr?.articles;
+
 	return (
-		<Link href={`/courses/${course.slug}`}>
-			<Card className="h-full overflow-hidden transition-shadow hover:shadow-lg flex flex-col justify-between">
+		<Link
+			href={courseHref}
+			className="block h-full"
+		>
+			<Card className={`flex h-full min-w-0 flex-col justify-between overflow-hidden transition-shadow hover:shadow-lg ${className}`}>
 				{course.thumbnail ? (
-					<div className="aspect-video w-full overflow-hidden bg-muted -translate-y-4">
+					<div className={`aspect-video w-full overflow-hidden bg-muted -translate-y-4 ${thumbnailClassName}`}>
 						{/* eslint-disable-next-line @next/next/no-img-element */}
 						<img
 							src={course.thumbnail}
 							alt={course.title}
-							className="h-full w-full object-cover"
+							className={`h-full w-full object-cover ${imageClassName}`}
 						/>
 					</div>
 				) : (
-					<div className="aspect-video w-full bg-linear-to-br from-primary/20 to-primary/5" />
+					<div className={`aspect-video w-full bg-linear-to-br from-primary/20 to-primary/5 -translate-y-4 ${thumbnailClassName}`} />
 				)}
-				<CardContent className="space-y-2 mb-auto">
-					<CardTitle className="line-clamp-2">{course.title}</CardTitle>
-					<p className="line-clamp-3 text-sm text-muted-foreground">{course.description}</p>
+
+				<CardContent className={`mb-auto space-y-2 ${contentClassName}`}>
+					<CardTitle className={`line-clamp-2 ${titleClassName}`}>{course.title}</CardTitle>
+					{course.description ? <p className={`line-clamp-3 text-sm text-muted-foreground ${descriptionClassName}`}>{course.description}</p> : null}
+					{children ? <div className="space-y-3">{children}</div> : null}
 				</CardContent>
-				<CardFooter className="flex items-center justify-between">
-					<div className="flex gap-3 text-xs text-muted-foreground">
-						<span className="flex items-center gap-1">
-							<BookOpen className="h-3 w-3" />
-							{course._count.modules} modules
-						</span>
-						<span className="flex items-center gap-1">
-							<Users className="h-3 w-3" />
-							{course._count.enrollments}
-						</span>
-					</div>
-					{userIsEnrolled ? (
-						<Badge variant="secondary">Inscrit</Badge>
-					) : userHasAccess ? (
-						<Badge
-							variant="default"
-							className="gap-1"
-						>
-							<Crown className="h-3 w-3" /> Accès inclus
-						</Badge>
-					) : course.price === 0 ? (
-						<Badge variant="secondary">Gratuit</Badge>
-					) : (
-						<Badge
-							variant="default"
-							className="gap-1"
-						>
-							<Lock className="h-3 w-3" /> {(course.price / 100).toFixed(2)} $
-						</Badge>
-					)}
-				</CardFooter>
+
+				{footer ? (
+					<CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">{footer}</CardFooter>
+				) : showDefaultFooter ? (
+					<CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+							<span className="flex items-center gap-1">
+								<BookOpen className="h-3 w-3" />
+								{moduleCount} {locale === "en" ? "modules" : "modules"}
+							</span>
+							<span className="flex items-center gap-1">
+								<Users className="h-3 w-3" />
+								{enrollmentCount} {locale === "en" ? "students" : "inscrits"}
+							</span>
+						</div>
+						{userIsEnrolled ? (
+							<Badge variant="secondary">{locale === "en" ? "Enrolled" : "Inscrit"}</Badge>
+						) : userHasAccess ? (
+							<Badge
+								variant="default"
+								className="gap-1"
+							>
+								<Crown className="h-3 w-3" /> {locale === "en" ? "Included access" : "Accès inclus"}
+							</Badge>
+						) : course.price === 0 ? (
+							<Badge variant="secondary">{locale === "en" ? "Free" : "Gratuit"}</Badge>
+						) : (
+							<Badge
+								variant="default"
+								className="gap-1"
+							>
+								<Lock className="h-3 w-3" /> {(course.price / 100).toFixed(2)} $
+							</Badge>
+						)}
+					</CardFooter>
+				) : null}
 			</Card>
 		</Link>
 	);

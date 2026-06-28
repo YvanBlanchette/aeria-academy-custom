@@ -1,64 +1,58 @@
 import Image from "next/image";
-import { dict } from "@/lib/i18n";
-import { FaFacebookF, FaGoogle, FaLinkedinIn, FaYoutube } from "react-icons/fa";
 import Link from "next/link";
 import { AiFillInstagram } from "react-icons/ai";
+import { FaFacebookF, FaGoogle, FaLinkedinIn, FaYoutube } from "react-icons/fa";
+
+import { dict } from "@/lib/i18n";
+
+const socialLinks = [
+	{ href: "https://www.facebook.com/yvanblanchettecvc", icon: FaFacebookF, label: "Facebook" },
+	{ href: "https://www.linkedin.com/in/aeriavoyages/", icon: FaLinkedinIn, label: "LinkedIn" },
+	{ href: "https://www.instagram.com/yvanblanchetteconseiller/", icon: AiFillInstagram, label: "Instagram" },
+	{ href: "https://www.youtube.com/@yvanblanchettecvc", icon: FaYoutube, label: "YouTube" },
+	{ href: "https://share.google/cdloB9ynunUhlfuAD", icon: FaGoogle, label: "Google" },
+];
 
 export default function About({ locale }) {
-	const t = dict[locale].about;
+	// Read the translated copy once so the markup stays readable.
+	const t = dict[locale]?.about ?? dict.fr?.about;
+
+	if (!t) return null;
 
 	return (
-		<section className="py-28 min-h-[600px] bg-[#0A1428]">
-			<div className="max-w-7xl mx-auto px-6">
-				<p className="eyebrow mb-3 text-yellow-600">{t.bioLabel}</p>4{" "}
-				<h2 className="font-display text-4xl md:text-5xl font-normal text-white mb-10">{t.bioTitle}</h2>
-				<div className="flex flex-col sm:flex-row gap-8 p-8 bg-white/5">
+		<section className="bg-[#0A1428] py-16 sm:py-24 lg:py-28">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				<p className="eyebrow mb-3 text-yellow-600">{t.bioLabel}</p>
+				<h2 className="mb-10 font-display text-4xl font-normal text-white sm:text-5xl">{t.bioTitle}</h2>
+
+				{/* Main bio card with a stacked layout on mobile and a side-by-side layout on larger screens. */}
+				<div className="flex flex-col items-center gap-8 rounded-2xl bg-white/5 p-6 text-center sm:p-8 md:flex-row md:items-start md:text-left">
 					<Image
 						src="/images/about-bio.webp"
 						alt={t.bioName}
 						width={120}
 						height={120}
-						className="rounded-full object-cover shrink-0 w-36 h-36"
+						className="h-28 w-28 shrink-0 rounded-full object-cover sm:h-36 sm:w-36"
 					/>
-					{/* <4iv className="w-20 h-20 rounded-full shrink-0 border border-yellow-700/40 bg-yellow-900/20 flex items-center justify-center font-display text-2xl text-yellow-600">
-						AV
-					</4iv> */}
 
-					<div>
-						<p className="font-display text-xl font-normal text-white mb-1">{t.bioName}</p>
-						<p className="text-yellow-600 text-xs tracking-w4dest uppercase mb-3">{t.bioRole}</p>
-						<p className="text-white/65 text-base leading-relaxed font-light max-w-2xl mb-3">{t.bioText}</p>
-						<div className="flex items-center gap-3">
-							<Link
-								target="_blank"
-								href="https://www.facebook.com/yvanblanchettecvc"
-							>
-								<FaFacebookF className="w-6 h-6 text-yellow-600 hover:text-yellow-400 transition-colors duration-200" />
-							</Link>
-							<Link
-								target="_blank"
-								href="https://www.linkedin.com/in/aeriavoyages/"
-							>
-								<FaLinkedinIn className="w-6 h-6 text-yellow-600 hover:text-yellow-400 transition-colors duration-200" />
-							</Link>
-							<Link
-								target="_blank"
-								href="https://www.instagram.com/yvanblanchetteconseiller/"
-							>
-								<AiFillInstagram className="w-6 h-6 text-yellow-600 hover:text-yellow-400 transition-colors duration-200" />
-							</Link>
-							<Link
-								target="_blank"
-								href="https://www.youtube.com/@yvanblanchettecvc"
-							>
-								<FaYoutube className="w-6 h-6 text-yellow-600 hover:text-yellow-400 transition-colors duration-200" />
-							</Link>
-							<Link
-								target="_blank"
-								href="https://share.google/cdloB9ynunUhlfuAD"
-							>
-								<FaGoogle className="w-5 h-5 text-yellow-600 hover:text-yellow-400 transition-colors duration-200" />
-							</Link>
+					<div className="w-full">
+						<p className="mb-1 font-display text-xl font-normal text-white">{t.bioName}</p>
+						<p className="mb-3 text-xs uppercase tracking-[0.25em] text-yellow-600">{t.bioRole}</p>
+						<p className="mb-3 max-w-2xl text-base font-light leading-relaxed text-white/65">{t.bioText}</p>
+
+						{/* Social links are grouped in one place so the section stays easy to update. */}
+						<div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
+							{socialLinks.map(({ href, icon: Icon, label }) => (
+								<Link
+									key={label}
+									target="_blank"
+									rel="noreferrer"
+									href={href}
+									aria-label={label}
+								>
+									<Icon className="h-6 w-6 text-yellow-600 transition-colors duration-200 hover:text-yellow-400" />
+								</Link>
+							))}
 						</div>
 					</div>
 				</div>

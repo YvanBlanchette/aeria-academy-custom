@@ -28,6 +28,7 @@ enum LessonType {
 
 model User {
   id            String    @id @default(cuid())
+  username      String?   @unique
   email         String    @unique
   name          String?
   password      String?
@@ -77,8 +78,53 @@ model UserProfile {
   // Préférences d'affichage
   publicProfile Boolean @default(false)  // si true, /profile/[username] est public
 
+  agencyId    String?
+  agency      Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  agencyRole  String?  // "Propriétaire", "Conseillère senior", "Conseillère junior", etc.
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Agency {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  
+  // Coordonnées
+  address     String?
+  city        String?
+  province    String?
+  postalCode  String?
+  country     String?
+  phone       String?
+  email       String?
+  websiteUrl  String?
+  
+  // Identité visuelle
+  logoUrl     String?
+  description String?  @db.Text
+  
+  // Certifications (Canada/Québec, optionnel)
+  iataCode    String?  // International Air Transport Association
+  tico        String?  // Travel Industry Council of Ontario
+  opc         String?  // Office de la protection du consommateur (QC)
+  
+  // Modération / Validation par l'admin AERIA
+  approved    Boolean  @default(false)
+  
+  // Admin de l'agence (premier créateur par défaut, modifiable par toi)
+  adminUserId String?
+  
+  // Préparation pour la suite (comptes agence avec licences)
+  agencyPlanId String?  // nullable pour l'instant, on l'utilisera plus tard
+  
+  members     UserProfile[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([approved])
 }
 
 model Course {

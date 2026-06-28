@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { BookOpen, Users, Headphones, Video, FileText, FileType, ListChecks, Lock, LucideChevronsDown, ChevronDownIcon } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -10,12 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { enrollInCourse } from "./actions";
 import Image from "next/image";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { getLocaleFromCookie } from "@/lib/locale";
 
 const typeIcons = { VIDEO: Video, AUDIO: Headphones, TEXT: FileText, PDF: FileType };
 
 export default async function CourseDetailPage({ params }) {
 	const { slug } = await params;
 	const session = await auth();
+	const cookieStore = await cookies();
+	const locale = getLocaleFromCookie(cookieStore);
 
 	const course = await prisma.course.findUnique({
 		where: { slug },
@@ -47,7 +51,7 @@ export default async function CourseDetailPage({ params }) {
 		isEnrolled = !!enrollment;
 	}
 
-	const blockedInfo = !access.allowed ? accessBlockedInfo(access.reason, course) : null;
+	const blockedInfo = !access.allowed ? accessBlockedInfo(access.reason, course, locale) : null;
 
 	return (
 		<div className="container max-w-7xl mx-auto px-4 py-12">

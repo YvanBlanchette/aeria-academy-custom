@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { UserForm } from "@/components/admin/user-form";
 import { UserDeleteButton } from "@/components/admin/user-delete-button";
 import DashboardLayoutRight from "@/components/dashboard-layout-right";
+import { Button } from "@/components/ui/button";
 
 export default async function UserDetailPage({ params }) {
 	const { id } = await params;
@@ -58,9 +59,17 @@ export default async function UserDetailPage({ params }) {
 			title={metadata.title}
 			subtitle={metadata.subtitle}
 			image={metadata.image}
-			btnLabel={metadata.btnLabel}
 			btnLink={metadata.btnLink}
 		>
+			<div className="flex items-center justify-end mb-2">
+				<Link
+					asChild
+					className="mt-auto mb-1"
+					href={metadata.btnLink}
+				>
+					<Button className="rounded-sm">Retour aux Membres</Button>
+				</Link>
+			</div>
 			<div className="space-y-8">
 				{/* Stats rapides */}
 				<div className="grid gap-4 md:grid-cols-3">

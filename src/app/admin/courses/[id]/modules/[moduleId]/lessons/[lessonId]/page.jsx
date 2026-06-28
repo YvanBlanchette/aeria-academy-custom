@@ -4,8 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { LessonForm } from "@/components/admin/lesson-form";
 import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card } from "@/components/ui/card";
+import { auth } from "@/auth";
 
 export default async function EditLessonPage({ params }) {
+	const session = await auth();
 	const { id: courseId, moduleId, lessonId } = await params;
 
 	const lesson = await prisma.lesson.findUnique({
@@ -20,6 +22,7 @@ export default async function EditLessonPage({ params }) {
 			subtitle="Modifier une leçon existante"
 			btnLabel="← Retour aux modules"
 			btnLink={`/admin/courses/${courseId}/modules/${moduleId}`}
+			user={session?.user}
 		>
 			<Card className="w-full p-6">
 				<LessonForm

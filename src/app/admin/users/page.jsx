@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { CourseRowActions } from "@/components/admin/course-row-actions";
+import { renameUserRole } from "@/lib/helpers";
 
 export default async function UsersPage() {
 	const users = await prisma.user.findMany({
@@ -21,11 +22,9 @@ export default async function UsersPage() {
 		},
 	});
 
-	console.log(users);
-
 	const metadata = {
-		title: "Utilisateurs",
-		subtitle: "Gérez les utilisateurs de l'Académie de Voyages ÆRIA",
+		title: "Membres",
+		subtitle: "Gérez les membres de l'Académie de Voyages ÆRIA",
 		btnLabel: "Créer un nouvel Étudiant",
 		btnLink: "/admin/users/new",
 	};
@@ -36,9 +35,19 @@ export default async function UsersPage() {
 			subtitle={metadata.subtitle}
 		>
 			<div className="bg-neutral-50 h-[calc(100vh-90px)] overflow-auto">
+				<h2 className="text-3xl font-bold text-center">Liste des membres</h2>
+				<div className="flex items-center justify-end mb-4">
+					<Link
+						href="/admin/users/new"
+						className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground`}
+					>
+						+ Ajouter un membres
+					</Link>
+				</div>
+
 				{users.length === 0 ? (
 					<div className="rounded-lg border border-dashed p-12 text-center">
-						<p className="text-muted-foreground">Aucun utilisateur pour le moment</p>
+						<p className="text-muted-foreground">Aucun membre pour le moment</p>
 						<Button
 							asChild
 							className="mt-4"
@@ -72,7 +81,7 @@ export default async function UsersPage() {
 											</Link>
 										</TableCell>
 										<TableCell className="text-center border">
-											<Badge variant={user.role ? "STUDENT" : "secondary"}>{user.role}</Badge>
+											<Badge variant={user.role ? "STUDENT" : "secondary"}>{renameUserRole(user.role)}</Badge>
 										</TableCell>
 										<TableCell className="text-center border">{user.email}</TableCell>
 										<TableCell className="text-center border">

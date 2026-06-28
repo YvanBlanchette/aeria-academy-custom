@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CourseRowActions } from "@/components/admin/course-row-actions";
 import DashboardLayoutRight from "@/components/dashboard-layout-right";
+import { auth } from "@/auth";
 
 export default async function CoursesListPage() {
+	const session = await auth();
 	const courses = await prisma.course.findMany({
 		orderBy: { createdAt: "desc" },
 		include: {
@@ -17,18 +19,25 @@ export default async function CoursesListPage() {
 	const metadata = {
 		title: "Cours",
 		subtitle: "Gérez les cours de l'Académie",
-		btnLabel: "Créer un nouveau cours",
-		btnLink: "/admin/courses/new",
 	};
 
 	return (
 		<DashboardLayoutRight
-			title={metadata.title}
-			subtitle={metadata.subtitle}
-			btnLabel={metadata.btnLabel}
-			btnLink={metadata.btnLink}
+			title={metadata?.title}
+			subtitle={metadata?.subtitle}
+			user={session?.user}
 		>
 			<div className="bg-neutral-50 h-[calc(100vh-90px)]">
+				<h2 className="text-3xl font-bold text-center">Liste des cours</h2>
+				<div className="flex items-center justify-end mb-4">
+					<Link
+						href="/admin/courses/new"
+						className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground`}
+					>
+						+ Créer un cours
+					</Link>
+				</div>
+
 				{courses.length === 0 ? (
 					<div className="rounded-lg border border-dashed p-12 text-center">
 						<p className="text-muted-foreground">Aucun cours pour le moment</p>

@@ -1,50 +1,48 @@
 "use client";
 
-import { dict } from "@/lib/i18n";
 import LearningPathCard from "@/components/LearningPathCard";
+import { dict } from "@/lib/i18n";
 
 export default function LearningPaths({ locale }) {
+	// Read the translated section copy once so the markup stays readable.
 	const t = dict[locale]?.learningPaths;
 	const programs = dict[locale]?.programs;
 
-	console.log("LearningPaths debug:", {
-		locale,
-		hasDict: !!dict[locale],
-		hasPrograms: !!dict[locale]?.programs,
-		programsLength: dict[locale]?.programs?.length,
-		firstProgram: dict[locale]?.programs?.[0],
-	});
+	if (!t || !programs) return null;
 
-	console.log(programs);
 	return (
 		<section
 			id="learning-paths"
-			className="py-28 bg-gray-50"
+			className="bg-gray-50 py-16 sm:py-24 lg:py-28"
 		>
-			<div className="max-w-7xl mx-auto">
-				<div className="mb-12">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				{/* Intro content for the section. */}
+				<div className="mb-12 max-w-3xl">
 					<p className="eyebrow mb-3">{t.sectionLabel}</p>
-					<h1 className="font-display text-4xl md:text-5xl font-medium">{t.title}</h1>
+					<h1 className="font-display text-4xl font-medium sm:text-5xl">{t.title}</h1>
 				</div>
 
-				<h2 className="text-2xl mb-3">{t.subtitle}</h2>
+				<h2 className="mb-3 text-2xl">{t.subtitle}</h2>
+
+				{/* Paragraphs are rendered from the locale dictionary for easy copy updates. */}
 				<div>
 					{t.paragraphs.map((p, i) => (
 						<p
 							key={i}
-							className="text-stone-700 leading-relaxed mb-2"
+							className="mb-2 leading-relaxed text-stone-700"
 						>
 							{p}
 						</p>
 					))}
 				</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 w-full">
+				{/* Program cards are displayed in a responsive grid for different screen sizes. */}
+				<div className="mt-8 grid w-full grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 					{programs.map((program) => (
 						<LearningPathCard
 							key={program.id}
 							program={program}
-							locale="fr"
+							locale={locale}
 						/>
 					))}
 				</div>

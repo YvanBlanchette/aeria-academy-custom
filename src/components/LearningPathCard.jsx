@@ -26,7 +26,7 @@ const LearningPathCard = ({ program, locale }) => {
 	return (
 		<Link
 			href={`/learning-paths/${program.slug}`}
-			className="bg-white border shadow-md hover:border-yellow-600/50 overflow-hidden group block rounded-xl"
+			className="group block h-full overflow-hidden rounded-xl border bg-white shadow-md transition-shadow hover:border-yellow-600/50 hover:shadow-lg"
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
 		>
@@ -53,9 +53,9 @@ const LearningPathCard = ({ program, locale }) => {
 					/>
 				)}
 			</div>
-			<div className="pt-4 pb-6 px-6">
-				<h3 className="font-display text-3xl font-bold">{program.titleLong}</h3>
-				<h4 className="text-gray-600 mt-2 text-sm">{program.subtitle}</h4>
+			<div className="flex h-full flex-col px-6 pb-6 pt-4">
+				<h3 className="font-display text-2xl font-bold sm:text-3xl">{program.titleLong}</h3>
+				<h4 className="mt-2 text-sm text-gray-600">{program.subtitle}</h4>
 				{program.learn && (
 					<div className="mt-3">
 						<p className="text-sm font-medium text-gray-700">{program.learnTitle}</p>

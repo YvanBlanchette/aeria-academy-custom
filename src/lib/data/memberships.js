@@ -14,7 +14,7 @@ export const PLANS = [
 		name: "Académie",
 		price: "29",
 		period: "/ mois",
-		description: "Accès illimité à tous les cours de l&apos;académie de voyages ÆRIA",
+		description: "Accès illimité à tous les cours de l'académie de voyages ÆRIA",
 		features: ["Accès à TOUS les cours", "Toutes les capsules audio", "Tests et certificats", "Nouveaux cours inclus", "Annulable à tout moment"],
 		featured: true,
 	},

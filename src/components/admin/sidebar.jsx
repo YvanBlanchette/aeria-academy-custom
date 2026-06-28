@@ -2,19 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BookOpen, Users, Settings, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Logo from "../logo";
-import Image from "next/image";
-
-const navItems = [
-	{ href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
-	{ href: "/admin/courses", label: "Cours", icon: BookOpen },
-	{ href: "/admin/users", label: "Utilisateurs", icon: Users },
-	{ href: "/admin/settings", label: "Paramètres", icon: Settings },
-];
+import { adminSidebarNavItems as navItems } from "@/lib/data/navigation";
 
 export function AdminSidebar({ user }) {
 	const pathname = usePathname();

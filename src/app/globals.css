@@ -131,10 +131,14 @@
 		@apply border-border outline-ring/50;
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground min-h-screen overflow-x-hidden antialiased;
 	}
 	html {
-		@apply font-sans;
+		@apply font-sans scroll-smooth;
+	}
+	img,
+	video {
+		@apply max-w-full h-auto;
 	}
 }
 

@@ -31,8 +31,6 @@ export default async function AdminDashboard() {
 		<DashboardLayoutRight
 			title={metadata.title}
 			subtitle={metadata.subtitle}
-			btnLabel={metadata.btnLabel}
-			btnLink={metadata.btnLink}
 		>
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 				{stats.map(({ label, value, icon: Icon }) => (

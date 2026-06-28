@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CourseForm } from "@/components/admin/course-form";
 import { ModuleManager } from "@/components/admin/module-manager";
 import DashboardLayoutRight from "@/components/dashboard-layout-right";
+import { auth } from "@/auth";
 
 export default async function EditCoursePage({ params }) {
+	const session = await auth();
 	const { id } = await params;
-	console.log(id);
 
 	const course = await prisma.course.findUnique({
 		where: { id },
@@ -37,6 +38,7 @@ export default async function EditCoursePage({ params }) {
 		<DashboardLayoutRight
 			title={metadata.title}
 			subtitle={metadata.subtitle}
+			user={session?.user}
 		>
 			<div className="flex justify-between gap-8 h-full">
 				<CourseForm course={course} />

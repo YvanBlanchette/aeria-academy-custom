@@ -2,13 +2,13 @@ import { dict } from "@/lib/i18n";
 import { FaInstagram, FaYoutube, FaLinkedin, FaEnvelope } from "react-icons/fa";
 import Logo from "../logo";
 
-export default function Footer({ locale }) {
-	const t = dict[locale].footer;
+export default function Footer({ locale = "fr" }) {
+	const t = dict[locale]?.footer ?? dict.fr?.footer ?? dict.en?.footer;
 
 	return (
-		<footer className="bg-gray-900 text-white pt-20 pb-10">
-			<div className="max-w-7xl mx-auto px-6">
-				<div className="flex justify-between gap-12 mb-16">
+		<footer className="bg-gray-900 pb-10 pt-16 text-white sm:pt-20">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				<div className="mb-16 flex flex-col gap-10 md:flex-row md:justify-between md:gap-12">
 					<div className="md:col-span-4">
 						{/* Logo */}
 						<Logo
@@ -47,7 +47,7 @@ export default function Footer({ locale }) {
 							</a>
 						</div>
 					</div>
-					<div className="md:col-span-8 hidden md:grid grid-cols-1 sm:grid-cols-3 gap-24">
+					<div className="grid grid-cols-1 gap-8 sm:grid-cols-3 md:col-span-8 md:gap-24">
 						<div>
 							<p className="text-[0.62rem] tracking-widest uppercase text-yellow-400 mb-2">{t.academy}</p>
 							<ul className="space-y-0.5">

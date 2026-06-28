@@ -4,8 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { LessonForm } from "@/components/admin/lesson-form";
 import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card } from "@/components/ui/card";
+import { auth } from "@/auth";
 
 export default async function NewLessonPage({ params }) {
+	const session = await auth();
 	const { id: courseId, moduleId } = await params;
 
 	const mod = await prisma.module.findUnique({
@@ -20,6 +22,7 @@ export default async function NewLessonPage({ params }) {
 			subtitle="Ajouter une nouvelle leçon"
 			btnLabel="← Retour aux modules"
 			btnLink={`/admin/courses/${courseId}/modules/${moduleId}`}
+			user={session?.user}
 		>
 			<Card className="w-full p-6">
 				<LessonForm

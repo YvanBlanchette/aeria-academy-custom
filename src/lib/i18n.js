@@ -397,6 +397,66 @@ export const dict = {
 			],
 		},
 
+		// ── PRICING — plans and access messaging ───────────────────────────
+		pricing: {
+			pageTitle: "Choose your plan",
+			pageSubtitle: "Get access to all ÆRIA courses and progress at your own pace. No commitment.",
+			canceledNotice: "Payment canceled. You can try again anytime.",
+			planCard: {
+				current: "Current plan",
+				included: "Included with your account",
+				createAccount: "Create an account",
+				loginRequired: "Login required",
+				changePlan: "Change plan",
+				subscribe: "Subscribe",
+				recommended: "Recommended",
+				manageSubscription: "Manage my subscription →",
+				securePayment: "Secure payment by Stripe",
+				cancelAnytime: "Cancel anytime",
+			},
+			plans: {
+				free: {
+					title: "Member Discovery",
+					name: "Discovery",
+					description: "Discover the ÆRIA Voyages Academy with free access",
+					period: "Free",
+					features: ["Free courses", "Free audio capsules", "Account creation"],
+				},
+				academy: {
+					title: "Member Academy",
+					name: "Academy",
+					description: "Unlimited access to every course in the ÆRIA travel academy",
+					period: "/ month",
+					features: ["Access to ALL courses", "All audio capsules", "Quizzes and certificates", "New courses included", "Cancel anytime"],
+				},
+				prime: {
+					title: "Member Prime",
+					name: "Prime",
+					description: "Academy + personalized coaching",
+					period: "/ month",
+					features: ["Everything in Academy", "Monthly coaching sessions", "Priority support", "Exclusive content"],
+				},
+			},
+		},
+
+		access: {
+			not_authenticated: {
+				title: "Login required",
+				message: "Log in to access this course.",
+				cta: "Log in",
+			},
+			no_access: {
+				title: "Subscription required",
+				message: "This course is reserved for Academy or Prime members. You can also buy it individually.",
+				cta: "View subscriptions",
+			},
+			default: {
+				title: "Access not authorized",
+				message: "You do not have access to this content.",
+				cta: "Back to catalog",
+			},
+		},
+
 		// ── FOOTER — site-wide footer ───────────────────────────────────────
 		footer: {
 			tagline: "Knowledge is the compass.\nExperience is the vessel.\nTogether, they create mastery.",
@@ -446,9 +506,9 @@ export const dict = {
 
 		// ── ARTICLES — section « Derniers Articles » de l'accueil ───────────
 		articles: {
-			sectionLabel: "Bulletins de l'Académie",
-			sectionTitle: "Derniers Articles",
-			viewAll: "Voir tous les articles",
+			sectionLabel: "Cours de l'Académie",
+			sectionTitle: "Cours Recommandés",
+			viewAll: "Voir tous les cours",
 			readMore: "Lire la suite",
 			featured: "À la une",
 		},
@@ -590,6 +650,66 @@ export const dict = {
 				"C'est tout à fait normal, plusieurs de nos étudiants complètent plus d'un parcours à la fois. Si vous êtes nouveau dans l'industrie, nous vous recommandons de commencer par le parcours qui vous enthousiasme le plus. La passion est le meilleur carburant pour l'apprentissage.",
 				"Vous avez des questions sur le parcours qui vous convient ? Contactez notre équipe de l'Académie, nous serons ravis de vous aider à tracer votre route.",
 			],
+		},
+
+		// ── TARIFICATION — plans et messages d'accès ───────────────────────
+		pricing: {
+			pageTitle: "Choisis ton plan",
+			pageSubtitle: "Accède à tous les cours ÆRIA et progresse à ton rythme. Sans engagement.",
+			canceledNotice: "Paiement annulé. Tu peux réessayer à tout moment.",
+			planCard: {
+				current: "Plan actuel",
+				included: "Inclus avec ton compte",
+				createAccount: "Créer un compte",
+				loginRequired: "Connexion requise",
+				changePlan: "Changer de plan",
+				subscribe: "S'abonner",
+				recommended: "Recommandé",
+				manageSubscription: "Gérer mon abonnement →",
+				securePayment: "Paiement sécurisé par Stripe",
+				cancelAnytime: "Annulation possible à tout moment",
+			},
+			plans: {
+				free: {
+					title: "Membre Découverte",
+					name: "Découverte",
+					description: "Découvre l'académie ÆRIA Voyages en libre accès",
+					period: "Gratuit",
+					features: ["Cours gratuits", "Capsules audio en accès libre", "Création de compte"],
+				},
+				academy: {
+					title: "Membre Académie",
+					name: "Académie",
+					description: "Accès illimité à tous les cours de l'académie de voyages ÆRIA",
+					period: "/ mois",
+					features: ["Accès à TOUS les cours", "Toutes les capsules audio", "Tests et certificats", "Nouveaux cours inclus", "Annulable à tout moment"],
+				},
+				prime: {
+					title: "Membre Prime",
+					name: "Prime",
+					description: "Académie + accompagnement personnalisé",
+					period: "/ mois",
+					features: ["Tout ce qui est dans Académie", "Sessions de coaching mensuelles", "Support prioritaire", "Contenus exclusifs"],
+				},
+			},
+		},
+
+		access: {
+			not_authenticated: {
+				title: "Connexion requise",
+				message: "Connecte-toi pour accéder à ce cours.",
+				cta: "Se connecter",
+			},
+			no_access: {
+				title: "Abonnement requis",
+				message: "Ce cours est réservé aux membres Académie ou Prime. Tu peux aussi l'acheter individuellement.",
+				cta: "Voir les abonnements",
+			},
+			default: {
+				title: "Accès non autorisé",
+				message: "Tu n'as pas accès à ce contenu.",
+				cta: "Retour au catalogue",
+			},
 		},
 
 		// ── PIED DE PAGE — bas de page du site ──────────────────────────────

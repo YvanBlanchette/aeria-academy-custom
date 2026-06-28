@@ -1,3 +1,4 @@
+import { dict } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -10,6 +11,10 @@ const FULL_ACCESS_TIERS = ["ACADEMY", "PRIME"];
  * Rôles qui donnent accès à tous les cours, peu importe membership.
  */
 const PRIVILEGED_ROLES = ["ADMIN", "INSTRUCTOR"];
+
+function getAccessMessages(locale = "fr") {
+	return dict[locale]?.access ?? dict.fr?.access ?? dict.en?.access;
+}
 
 /**
  * Détermine si un user peut accéder à un cours.
@@ -68,25 +73,27 @@ export function canAccessCourseSync(user, course, userEnrollmentsCourseIds = [])
 /**
  * Helper pour générer un message + CTA selon la raison de blocage.
  */
-export function accessBlockedInfo(reason, course) {
+export function accessBlockedInfo(reason, course, locale = "fr") {
+	const messages = getAccessMessages(locale);
+
 	switch (reason) {
 		case "not_authenticated":
 			return {
-				title: "Connexion requise",
-				message: "Connecte-toi pour accéder à ce cours.",
-				cta: { label: "Se connecter", href: `/login?callbackUrl=/courses/${course.slug}` },
+				title: messages?.not_authenticated?.title ?? "Connexion requise",
+				message: messages?.not_authenticated?.message ?? "Connecte-toi pour accéder à ce cours.",
+				cta: { label: messages?.not_authenticated?.cta ?? "Se connecter", href: `/login?callbackUrl=/courses/${course.slug}` },
 			};
 		case "no_access":
 			return {
-				title: "Abonnement requis",
-				message: "Ce cours est réservé aux membres Académie ou Prime. Tu peux aussi l'acheter individuellement.",
-				cta: { label: "Voir les abonnements", href: "/pricing" },
+				title: messages?.no_access?.title ?? "Abonnement requis",
+				message: messages?.no_access?.message ?? "Ce cours est réservé aux membres Académie ou Prime. Tu peux aussi l'acheter individuellement.",
+				cta: { label: messages?.no_access?.cta ?? "Voir les abonnements", href: "/pricing" },
 			};
 		default:
 			return {
-				title: "Accès non autorisé",
-				message: "Tu n'as pas accès à ce contenu.",
-				cta: { label: "Retour au catalogue", href: "/courses" },
+				title: messages?.default?.title ?? "Accès non autorisé",
+				message: messages?.default?.message ?? "Tu n'as pas accès à ce contenu.",
+				cta: { label: messages?.default?.cta ?? "Retour au catalogue", href: "/courses" },
 			};
 	}
 }

@@ -7,33 +7,43 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function Hero({ locale }) {
-	// User auth + membership state
+	// Pull auth state once so the component can decide what to show.
 	const { isLoaded, isSignedIn, isMember, user } = useCurrentUser();
 
-	// Translated content for the hero section
-	const t = dict[locale].hero;
+	// Fall back to the French copy if a locale is missing, which keeps the page resilient.
+	const heroContent = dict[locale]?.hero ?? dict.fr?.hero;
 
-	// Locale-aware link helper
+	// Build a locale-aware URL without repeating the same logic in multiple places.
 	const href = (path) => localizedHref(locale, path);
 
-	// Choose the CTA based on user state:
-	//  - members get nothing (they're already in)
-	//  - signed-in non-members get "Upgrade" to /pricing
-	//  - signed-out visitors get the main "Join the Academy" CTA to /register
-	const cta = isMember ? null : isSignedIn ? { label: t.ctaUpgrade ?? "Upgrade", href: href("/pricing") } : { label: t.cta, href: href("/register") };
+	// Derive a friendly user name for a personalized greeting.
+	const firstName = user?.fullName?.split(" ")[0] ?? "";
+
+	// Use the greeting when available, otherwise fall back to the standard headline.
+	const headline = isSignedIn && firstName && heroContent?.greeting ? heroContent.greeting.replace("{name}", firstName) : (heroContent?.headline ?? "");
+
+	// Show a different CTA depending on the user's access state.
+	const cta = isMember
+		? null
+		: isSignedIn
+			? { label: heroContent?.ctaUpgrade ?? "Upgrade", href: href("/pricing") }
+			: { label: heroContent?.cta ?? "Rejoindre l'académie", href: href("/register") };
+
+	if (!heroContent) return null;
 
 	return (
-		<section className="relative min-h-screen flex items-center">
+		<section className="relative flex min-h-screen items-center overflow-hidden">
+			{/* Decorative background layer; kept empty on purpose so the video can fill the area. */}
 			<div className="absolute inset-0 bg-cover bg-center" />
 
-			{/* Background video, with poster as fallback for unsupported browsers / slow connections */}
+			{/* Background video with a poster fallback for slower connections. */}
 			<video
 				autoPlay
 				muted
 				loop
 				playsInline
 				preload="metadata"
-				className="absolute inset-0 object-cover w-full h-full"
+				className="absolute inset-0 h-full w-full object-cover"
 				poster="/videos/hero-fallback.webp"
 			>
 				<source
@@ -42,30 +52,32 @@ export default function Hero({ locale }) {
 				/>
 			</video>
 
-			{/* Dark gradient overlay to keep text readable over the video */}
+			{/* Dark overlay keeps the text readable against the video. */}
 			<div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/45 to-black/20" />
 
-			{/* Content */}
-			<div className="relative z-10 max-w-7xl mx-auto px-6 pt-36 pb-24">
-				{/* Decorative filigree logo, large and faded behind the text */}
+			{/* Main content wrapper. */}
+			<div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-20 pt-24 sm:px-6 sm:pb-24 sm:pt-36 lg:px-8">
+				{/* Decorative filigree logo placed behind the text for visual depth. */}
 				<Image
 					src="/images/windrose-filigran.svg"
 					alt=""
 					aria-hidden="true"
 					width={600}
 					height={600}
-					className="absolute top-1/2 aspect-square left-0 -translate-x-1/4 -translate-y-1/2 opacity-[0.08] -z-10"
+					priority
+					sizes="(max-width: 768px) 45vw, 35vw"
+					className="absolute left-0 top-1/2 aspect-square -z-10 -translate-y-1/2 opacity-[0.08]"
 				/>
 
-				{/* Main hero copy */}
-				<div className="max-w-5xl flex flex-col justify-center items-center">
-					<p className="eyebrow text-yellow-600 mb-4">{t.eyebrow}</p>
-					<h1 className="font-display text-5xl md:text-7xl text-white font-normal leading-tight mb-6 text-shadow">
-						{isSignedIn && user?.fullName && t.greeting ? t.greeting.replace("{name}", user.fullName.split(" ")[0]) : t.headline}
+				{/* Hero copy and call-to-action. */}
+				<div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
+					<p className="eyebrow mb-4 text-yellow-600">{heroContent.eyebrow}</p>
+					<h1 className="mb-6 max-w-4xl font-display text-4xl font-normal leading-tight text-white text-shadow sm:text-5xl md:text-6xl lg:text-7xl">
+						{headline}
 					</h1>
-					<p className="text-white text-base md:text-lg font-light leading-relaxed mb-10 max-w-xl text-center tracking-wider text-shadow">{t.sub}</p>
+					<p className="mb-10 max-w-2xl text-sm font-light leading-relaxed tracking-wider text-white text-shadow sm:text-base md:text-lg">{heroContent.sub}</p>
 
-					{/* CTA: reserve space during initial auth load to avoid layout shift */}
+					{/* Reserve vertical space until auth state is known to prevent layout shift. */}
 					{!isLoaded ? (
 						<div
 							className="h-12"
@@ -74,7 +86,7 @@ export default function Hero({ locale }) {
 					) : cta ? (
 						<Link
 							href={cta.href}
-							className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-6 rounded w-fit"
+							className="w-full rounded bg-yellow-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-yellow-700 sm:w-auto"
 						>
 							{cta.label}
 						</Link>

@@ -13,7 +13,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserButtonClient({ user }) {
+export function UserButtonClient({ user, size }) {
 	const avatar = user?.image || "/images/avatar-placeholder.png";
 	const dashboardURL = user?.role === "ADMIN" ? "/admin" : "/dashboard";
 
@@ -38,7 +38,7 @@ export function UserButtonClient({ user }) {
 					size="icon"
 					className="rounded-full cursor-pointer"
 				>
-					<Avatar>
+					<Avatar size={size}>
 						<AvatarImage
 							src={avatar}
 							alt={user?.name}
