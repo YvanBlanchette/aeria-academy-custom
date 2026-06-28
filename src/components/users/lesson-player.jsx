@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { List } from "lucide-react";
+import { List, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 function slugifyHeading(value) {
 	return value
@@ -265,10 +265,10 @@ function TextRenderer({ content, lessonTitle }) {
 						<Button
 							variant="outline"
 							size="sm"
-							className="gap-2 rounded-full border-border shadow-lg cursor-pointer hover:-translate-x-1 transition-transform bg-white hover:bg-white border"
+							className="h-8 w-8 p-0 gap-0 rounded-full border-border shadow-lg cursor-pointer hover:-translate-x-1 transition-transform bg-white hover:bg-white border sm:h-7 sm:w-auto sm:px-2.5 sm:gap-2"
 						>
 							<List className="h-4 w-4" />
-							<span>Sommaire</span>
+							<span className="max-sm:hidden">Sommaire</span>
 						</Button>
 					</SheetTrigger>
 					<SheetContent
@@ -276,6 +276,16 @@ function TextRenderer({ content, lessonTitle }) {
 						overlayClassName="bg-black/5 supports-backdrop-filter:backdrop-blur-none"
 						showCloseButton={false}
 					>
+						<SheetClose asChild>
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								className="absolute left-1 top-1 z-10"
+							>
+								<X className="h-4 w-4" />
+								<span className="sr-only">Fermer le sommaire</span>
+							</Button>
+						</SheetClose>
 						<div className="border-b h-[90px] flex items-center justify-center bg-white px-6">
 							<Logo
 								locale="fr"

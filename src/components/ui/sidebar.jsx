@@ -108,7 +108,7 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
 }
 
 function Sidebar({ side = "left", variant = "sidebar", collapsible = "offcanvas", desktopOverlay = false, className, children, dir, ...props }) {
-	const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+	const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
 
 	if (collapsible === "none") {
 		return (
@@ -172,6 +172,14 @@ function Sidebar({ side = "left", variant = "sidebar", collapsible = "offcanvas"
 						: "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
 				)}
 			/>
+			{desktopOverlay && state === "expanded" ? (
+				<button
+					type="button"
+					aria-label="Close Sidebar"
+					onClick={toggleSidebar}
+					className="fixed inset-0 z-30 hidden bg-black/5 md:block"
+				/>
+			) : null}
 			<div
 				data-slot="sidebar-container"
 				data-side={side}

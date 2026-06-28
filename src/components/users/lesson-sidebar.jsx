@@ -34,18 +34,21 @@ export function LessonSidebar({ course, completedSet }) {
 								<p className=" py-1 text-[12px] font-semibold uppercase text-muted-foreground">{mod.title}</p>
 							</Button>
 						</CollapsibleTrigger>
-						<CollapsibleContent className="flex flex-col justify-start items-start gap-2 pt-0 text-sm">
-							<ul className="space-y-0.5">
+						<CollapsibleContent className="flex w-full flex-col justify-start items-stretch gap-2 pt-0 text-sm">
+							<ul className="w-full space-y-0.5">
 								{mod.lessons.map((lesson) => {
 									const Icon = typeIcons[lesson.type];
 									const isActive = lesson.id === currentLessonId;
 									const isDone = completed.has(lesson.id);
 									return (
-										<li key={lesson.id}>
+										<li
+											key={lesson.id}
+											className="w-full"
+										>
 											<Link
 												href={`/learn/${course.id}/${lesson.id}`}
 												className={cn(
-													"flex items-center gap-2 rounded-none px-3 py-2 text-sm transition-colors",
+													"flex w-full items-center gap-2 rounded-none px-3 py-2 text-sm transition-colors",
 													isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted",
 												)}
 											>
@@ -57,10 +60,10 @@ export function LessonSidebar({ course, completedSet }) {
 									);
 								})}
 								{mod.quiz && (
-									<li>
+									<li className="w-full">
 										<Link
 											href={`/learn/${course.id}/quiz/${mod.quiz.id}`}
-											className={cn("flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors", "hover:bg-muted opacity-75")}
+											className={cn("flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors", "hover:bg-muted opacity-75")}
 										>
 											<ListChecks className="h-4 w-4 shrink-0 ml-6" />
 											<span className="line-clamp-2 flex-1">Test du module</span>

@@ -20,9 +20,9 @@ function FloatingLessonsTrigger() {
 			<SidebarTrigger
 				variant="outline"
 				size="sm"
-				className="gap-2 rounded-full border-border shadow-lg cursor-pointer hover:translate-x-1 transition-transform bg-white hover:bg-white border"
+				className="h-8 w-8 p-0 gap-0 rounded-full border-border shadow-lg cursor-pointer hover:translate-x-1 transition-transform bg-white hover:bg-white border sm:h-7 sm:w-auto sm:px-2.5 sm:gap-2"
 			>
-				<span>Leçons</span>
+				<span className="max-sm:hidden">Leçons</span>
 			</SidebarTrigger>
 		</div>
 	);
@@ -35,8 +35,8 @@ export function LearnShell({ course, completedSet, defaultOpen, children, sessio
 		<SidebarProvider
 			defaultOpen={defaultOpen}
 			style={{
-				"--sidebar-width": "20.5rem",
-				"--sidebar-width-mobile": "20.5rem",
+				"--sidebar-width": "384px",
+				"--sidebar-width-mobile": "384px",
 				"--background": "#f5f5f5",
 			}}
 		>
