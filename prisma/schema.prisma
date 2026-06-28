@@ -251,6 +251,21 @@ model Certificate {
   @@unique([userId, courseId])
 }
 
+model ContactMessage {
+  id            String   @id @default(cuid())
+  fullName      String
+  email         String
+  subject       String
+  message       String   @db.Text
+  locale        String   @default("fr")
+  consentGiven  Boolean  @default(false)
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 // Tables NextAuth
 model Account {
   id                String  @id @default(cuid())

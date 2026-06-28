@@ -14,7 +14,10 @@ export default async function MarketingLayout({ children }) {
 
 	return (
 		<div className="flex min-h-screen flex-col overflow-x-hidden">
-			<Navigation locale={locale} />
+			<Navigation
+				locale={locale}
+				scrolled
+			/>
 			<main className="flex-1 overflow-x-hidden bg-neutral-50">{content}</main>
 			<Footer locale={locale} />
 		</div>

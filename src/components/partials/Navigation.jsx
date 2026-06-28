@@ -15,7 +15,7 @@ import { Button } from "../ui/button";
 import { UserButton } from "../ui/user-button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 
-const LOCKED_ROUTES = ["/pricing", "/courses", "/about", "/login", "/register", "/dashboard", "/profile"];
+const LOCKED_ROUTES = ["/pricing", "/courses", "/about", "/login", "/register", "/dashboard", "/profile", "/contact"];
 
 export default function Navbar({ locale = "fr", otherLocale }) {
 	// 1. Hooks
@@ -69,12 +69,9 @@ export default function Navbar({ locale = "fr", otherLocale }) {
 
 	const navLinks = [
 		{ label: t.academy, href: href("/"), desktop: true, mobile: true },
-		{ label: t.learningPaths, href: href("/#learning-paths"), desktop: true, mobile: false },
-		{ label: t.oceanCruises, href: href("/cruises"), desktop: false, mobile: true },
-		{ label: t.destinations, href: href("/destinations"), desktop: false, mobile: true },
-		{ label: t.tours, href: href("/tours"), desktop: false, mobile: true },
 		{ label: t.pricing, href: href("/pricing"), desktop: true, mobile: true, hideIfMember: false },
 		{ label: t.about, href: href("/about"), desktop: true, mobile: true },
+		{ label: t.contact, href: href("/contact"), desktop: true, mobile: true },
 	];
 
 	const visibleLinks = (placement) =>

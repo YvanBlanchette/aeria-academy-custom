@@ -228,15 +228,9 @@ export const dict = {
 		// ── NAV — top navigation labels ─────────────────────────────────────
 		nav: {
 			academy: "Academy",
-			learningPaths: "Learning Paths",
-			cruises: "Cruises",
-			oceanCruises: "Ocean Cruises",
-			riverCruises: "River Cruises",
-			expeditionCruises: "Expedition Cruises",
-			destinations: "Destinations",
-			tours: "Tours",
-			about: "About",
 			pricing: "Pricing",
+			about: "About",
+			contact: "Contact",
 			joinAcademy: "Sign In",
 		},
 
@@ -483,15 +477,9 @@ export const dict = {
 		// ── NAV — étiquettes de la navigation principale ────────────────────
 		nav: {
 			academy: "Académie",
-			learningPaths: "Parcours",
-			cruises: "Croisières",
-			oceanCruises: "Croisières Océaniques",
-			riverCruises: "Croisières Fluviales",
-			expeditionCruises: "Croisières Expéditions",
-			destinations: "Destinations",
-			tours: "Circuits",
-			about: "À Propos",
 			pricing: "Tarification",
+			contact: "Contact",
+			about: "À Propos",
 			joinAcademy: "Se connecter",
 		},
 

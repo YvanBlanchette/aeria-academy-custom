@@ -20,7 +20,9 @@ export default function About({ locale }) {
 	if (!t) return null;
 
 	return (
-		<section className="bg-[#0A1428] py-16 sm:py-24 lg:py-28">
+		<section className="relative bg-[#0A1428] py-16 sm:py-24 lg:py-28">
+			<span className="absolute left-0 right-0 -top-2 h-[2px] w-full bg-[#111828]/50" />
+			<span className="absolute left-0 right-0 -bottom-2 h-[2px] w-full bg-[#111828]/50" />
 			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 				<p className="eyebrow mb-3 text-yellow-600">{t.bioLabel}</p>
 				<h2 className="mb-10 font-display text-4xl font-normal text-white sm:text-5xl">{t.bioTitle}</h2>

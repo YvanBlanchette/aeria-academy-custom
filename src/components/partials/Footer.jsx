@@ -6,10 +6,11 @@ export default function Footer({ locale = "fr" }) {
 	const t = dict[locale]?.footer ?? dict.fr?.footer ?? dict.en?.footer;
 
 	return (
-		<footer className="bg-gray-900 pb-10 pt-16 text-white sm:pt-20">
+		<footer className="relative bg-[#0A1428] pb-10 pt-16 text-white sm:pt-20">
+			<span className="absolute left-0 right-0 -top-2 h-[2px] w-full bg-[#111828]/50" />
 			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 				<div className="mb-16 flex flex-col gap-10 md:flex-row md:justify-between md:gap-12">
-					<div className="md:col-span-4">
+					<div className="md:col-span-4 mx-auto md:mx-0">
 						{/* Logo */}
 						<Logo
 							scrolled={false}
@@ -47,7 +48,7 @@ export default function Footer({ locale = "fr" }) {
 							</a>
 						</div>
 					</div>
-					<div className="grid grid-cols-1 gap-8 sm:grid-cols-3 md:col-span-8 md:gap-24">
+					<div className="hidden md:grid grid-cols-1 gap-8 sm:grid-cols-3 md:col-span-8 md:gap-24">
 						<div>
 							<p className="text-[0.62rem] tracking-widest uppercase text-yellow-400 mb-2">{t.academy}</p>
 							<ul className="space-y-0.5">
