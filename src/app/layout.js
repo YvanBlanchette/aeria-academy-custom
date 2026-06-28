@@ -17,6 +17,12 @@ export default function RootLayout({ children }) {
 			lang="fr"
 			className={cn("font-sans", inter.variable)}
 		>
+			<head>
+				<meta
+					name="apple-mobile-web-app-title"
+					content="ÆRIA"
+				/>
+			</head>
 			<body suppressHydrationWarning>
 				<Providers>{children}</Providers>
 				<Toaster richColors />

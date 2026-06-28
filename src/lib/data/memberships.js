@@ -25,6 +25,6 @@ export const PLANS = [
 		price: "49",
 		period: "/ mois",
 		description: "Académie + accompagnement personnalisé",
-		features: ["Tout ce qui est dans Académie", "Sessions de coaching mensuelles", "Support prioritaire", "Contenus exclusifs"],
+		features: ["Tout ce qui est dans Académie", "Support prioritaire", "Contenus exclusifs"],
 	},
 ];

@@ -87,9 +87,11 @@ export default async function CourseDetailPage({ params }) {
 									<Users className="h-4 w-4" />
 									{course._count.enrollments} inscrits
 								</span>
-								<Badge variant={course.price === 0 ? "secondary" : "default"}>
-									{course.price === 0 || isEnrolled ? "Disponible" : `${(course.price / 100).toFixed(2)} $`}
-								</Badge>
+								{!isEnrolled && access.allowed && course.price > 0 && (
+									<Badge variant={course.price === 0 ? "secondary" : "default"}>
+										{course.price === 0 ? "Gratuit" : `${(course.price / 100).toFixed(2)} $`}
+									</Badge>
+								)}
 							</div>
 							<div></div>
 
