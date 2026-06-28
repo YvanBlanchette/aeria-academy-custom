@@ -16,19 +16,27 @@ export async function markLessonComplete(courseId, lessonId) {
 	});
 	if (!enrollment) return { error: "Non inscrit à ce cours" };
 
+	const existingProgress = await prisma.lessonProgress.findUnique({
+		where: {
+			userId_lessonId: { userId: session.user.id, lessonId },
+		},
+	});
+
+	const shouldComplete = !existingProgress?.completed;
+
 	await prisma.lessonProgress.upsert({
 		where: {
 			userId_lessonId: { userId: session.user.id, lessonId },
 		},
-		update: { completed: true, completedAt: new Date() },
+		update: { completed: shouldComplete, completedAt: shouldComplete ? new Date() : null },
 		create: {
 			userId: session.user.id,
 			lessonId,
-			completed: true,
-			completedAt: new Date(),
+			completed: shouldComplete,
+			completedAt: shouldComplete ? new Date() : null,
 		},
 	});
 
 	revalidatePath(`/learn/${courseId}`);
-	return { success: true };
+	return { success: true, completed: shouldComplete };
 }

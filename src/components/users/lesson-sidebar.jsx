@@ -16,6 +16,9 @@ export function LessonSidebar({ course, completedSet }) {
 
 	return (
 		<nav className="flex-1 overflow-auto">
+			<div className="border-b px-4 py-4 mb-2">
+				<p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground text-center">Liste des lecons</p>
+			</div>
 			{course.modules.map((mod, idx) => (
 				<div
 					key={mod.id}

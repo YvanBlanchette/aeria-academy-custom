@@ -1,11 +1,99 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { List } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import Logo from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+function slugifyHeading(value) {
+	return value
+		.toLowerCase()
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/[^a-z0-9\s-]/g, "")
+		.trim()
+		.replace(/\s+/g, "-")
+		.replace(/-+/g, "-");
+}
+
+function flattenNodeText(node) {
+	if (typeof node === "string" || typeof node === "number") {
+		return String(node);
+	}
+
+	if (Array.isArray(node)) {
+		return node.map(flattenNodeText).join("");
+	}
+
+	if (node && typeof node === "object" && "props" in node) {
+		return flattenNodeText(node.props?.children);
+	}
+
+	return "";
+}
+
+function TableOfContents({ items, activeId }) {
+	if (items.length === 0) {
+		return <p className="text-sm text-muted-foreground">Aucun intertitre h2 detecte dans cette lecon.</p>;
+	}
+
+	return (
+		<ol className="space-y-2">
+			{items.map((item, index) => (
+				<li key={item.id}>
+					<a
+						href={`#${item.id}`}
+						aria-current={activeId === item.id ? "location" : undefined}
+						className={[
+							"flex items-center gap-2 rounded-none px-3 py-2 text-sm transition-colors",
+							activeId === item.id ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
+						].join(" ")}
+					>
+						<span
+							className={[
+								"inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[11px] font-semibold",
+								activeId === item.id ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground",
+							].join(" ")}
+						>
+							{index + 1}
+						</span>
+						<span className="line-clamp-2 flex-1">{item.title}</span>
+					</a>
+				</li>
+			))}
+		</ol>
+	);
+}
+
+function createHeadingRenderer(tagName) {
+	const slugCounts = new Map();
+
+	return function Heading({ children, ...props }) {
+		const title = flattenNodeText(children).trim();
+		const baseSlug = slugifyHeading(title) || "section";
+		const count = slugCounts.get(baseSlug) ?? 0;
+		slugCounts.set(baseSlug, count + 1);
+
+		const id = count === 0 ? baseSlug : `${baseSlug}-${count + 1}`;
+		const Tag = tagName;
+
+		return (
+			<Tag
+				id={id}
+				className="scroll-mt-24"
+				{...props}
+			>
+				{children}
+			</Tag>
+		);
+	};
+}
+
 function VideoPlayer({ url }) {
-	// YouTube embed
 	const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?]+)/);
 	if (ytMatch) {
 		return (
@@ -19,7 +107,7 @@ function VideoPlayer({ url }) {
 			</div>
 		);
 	}
-	// Vimeo embed
+
 	const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
 	if (vimeoMatch) {
 		return (
@@ -33,7 +121,7 @@ function VideoPlayer({ url }) {
 			</div>
 		);
 	}
-	// Fichier MP4/WebM direct
+
 	return (
 		<div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
 			<video
@@ -60,7 +148,7 @@ function AudioPlayer({ url }) {
 function PdfViewer({ url }) {
 	return (
 		<div className="space-y-2">
-			<div className="aspect-[4/3] w-full overflow-hidden rounded-lg border">
+			<div className="aspect-4/3 w-full overflow-hidden rounded-lg border">
 				<iframe
 					src={url}
 					className="h-full w-full"
@@ -79,10 +167,146 @@ function PdfViewer({ url }) {
 	);
 }
 
-function TextRenderer({ content }) {
+function TextRenderer({ content, lessonTitle }) {
+	const articleRef = useRef(null);
+	const [tableOfContents, setTableOfContents] = useState([]);
+	const [activeId, setActiveId] = useState(null);
+	const headingComponents = {
+		h1: createHeadingRenderer("h1"),
+		h2: createHeadingRenderer("h2"),
+		h3: createHeadingRenderer("h3"),
+	};
+
+	useEffect(() => {
+		const articleElement = articleRef.current;
+
+		if (!articleElement) {
+			setTableOfContents([]);
+			setActiveId(null);
+			return;
+		}
+
+		const headings = [...articleElement.querySelectorAll("h2")]
+			.map((element) => ({
+				id: element.id,
+				title: element.textContent?.trim() ?? "",
+				level: Number(element.tagName.replace("H", "")),
+			}))
+			.filter((item) => item.id && item.title);
+
+		setTableOfContents(headings);
+		setActiveId(headings[0]?.id ?? null);
+	}, [content]);
+
+	useEffect(() => {
+		if (tableOfContents.length === 0 || typeof window === "undefined") {
+			setActiveId(null);
+			return undefined;
+		}
+
+		setActiveId(tableOfContents[0].id);
+
+		const headingElements = tableOfContents.map((item) => document.getElementById(item.id)).filter(Boolean);
+
+		if (headingElements.length === 0) {
+			return undefined;
+		}
+
+		const visibleHeadings = new Map();
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						visibleHeadings.set(entry.target.id, entry.boundingClientRect.top);
+					} else {
+						visibleHeadings.delete(entry.target.id);
+					}
+				});
+
+				const topVisibleHeading = [...visibleHeadings.entries()].sort((a, b) => a[1] - b[1])[0]?.[0];
+
+				if (topVisibleHeading) {
+					setActiveId(topVisibleHeading);
+					return;
+				}
+
+				const fallback = [...headingElements].reverse().find((element) => element.getBoundingClientRect().top <= 140);
+
+				setActiveId(fallback?.id ?? tableOfContents[0].id);
+			},
+			{
+				rootMargin: "-96px 0px -55% 0px",
+				threshold: [0, 1],
+			},
+		);
+
+		headingElements.forEach((element) => observer.observe(element));
+
+		const handleHashChange = () => {
+			const hash = window.location.hash.replace("#", "");
+			if (hash) {
+				setActiveId(hash);
+			}
+		};
+
+		window.addEventListener("hashchange", handleHashChange);
+
+		return () => {
+			observer.disconnect();
+			window.removeEventListener("hashchange", handleHashChange);
+		};
+	}, [content, tableOfContents]);
+
 	return (
-		<div className="prose prose-slate max-w-none dark:prose-invert">
-			<ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+		<div className="relative">
+			<div className="fixed right-4 top-26 z-40 flex w-fit justify-end">
+				<Sheet>
+					<SheetTrigger asChild>
+						<Button
+							variant="outline"
+							size="sm"
+							className="gap-2 rounded-full border-border shadow-lg cursor-pointer hover:-translate-x-1 transition-transform bg-white hover:bg-white border"
+						>
+							<List className="h-4 w-4" />
+							<span>Sommaire</span>
+						</Button>
+					</SheetTrigger>
+					<SheetContent
+						className="w-full gap-0 p-0 sm:max-w-md"
+						overlayClassName="bg-black/5 supports-backdrop-filter:backdrop-blur-none"
+						showCloseButton={false}
+					>
+						<div className="border-b h-[90px] flex items-center justify-center bg-white px-6">
+							<Logo
+								locale="fr"
+								scrolled
+								size="md"
+							/>
+						</div>
+						<div className="border-b px-4 py-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground text-center">Table des matieres</p>
+						</div>
+						<div className="bg-white px-0 py-2">
+							<TableOfContents
+								items={tableOfContents}
+								activeId={activeId}
+							/>
+						</div>
+					</SheetContent>
+				</Sheet>
+			</div>
+
+			<div
+				ref={articleRef}
+				className="prose prose-slate max-w-none pr-0 pt-6 dark:prose-invert sm:pr-4"
+			>
+				<ReactMarkdown
+					remarkPlugins={[remarkGfm]}
+					components={headingComponents}
+				>
+					{content}
+				</ReactMarkdown>
+			</div>
 		</div>
 	);
 }
@@ -102,7 +326,12 @@ export function LessonPlayer({ lesson }) {
 		case "AUDIO":
 			return <AudioPlayer url={lesson.content} />;
 		case "TEXT":
-			return <TextRenderer content={lesson.content} />;
+			return (
+				<TextRenderer
+					content={lesson.content}
+					lessonTitle={lesson.title}
+				/>
+			);
 		case "PDF":
 			return <PdfViewer url={lesson.content} />;
 		default:
