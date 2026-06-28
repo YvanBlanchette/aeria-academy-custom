@@ -42,6 +42,7 @@ export function MarkCompleteButton({ courseId, lessonId, isCompleted, nextLesson
 			variant={completed ? "secondary" : "default"}
 			onClick={handleClick}
 			disabled={loading}
+			className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 		>
 			{loading ? (
 				<Loader2 className="mr-1 h-4 w-4 animate-spin" />

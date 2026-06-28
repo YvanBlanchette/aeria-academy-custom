@@ -71,14 +71,17 @@ export default async function LessonPage({ params }) {
 					asChild
 					variant="outline"
 					disabled={!prev}
+					className="h-8 w-8 p-0 gap-0 rounded-full border-border shadow-lg cursor-pointer hover:-translate-x-1 transition-transform bg-white hover:bg-white border sm:h-7 sm:w-auto sm:px-2.5 sm:gap-2"
 				>
 					{prev ? (
 						<Link href={`/learn/${courseId}/${prev.id}`}>
-							<ChevronLeft className="mr-1 h-4 w-4" /> Précédent
+							<ChevronLeft className="mr-1 h-4 w-4" />
+							<span className="max-sm:hidden">Précédent</span>
 						</Link>
 					) : (
 						<span>
-							<ChevronLeft className="mr-1 h-4 w-4" /> Précédent
+							<ChevronLeft className="mr-1 h-4 w-4" />
+							<span className="max-sm:hidden">Précédent</span>
 						</span>
 					)}
 				</Button>
@@ -94,14 +97,17 @@ export default async function LessonPage({ params }) {
 					asChild
 					variant="outline"
 					disabled={!next}
+					className="h-8 w-8 p-0 gap-0 rounded-full border-border shadow-lg cursor-pointer hover:translate-x-1 transition-transform bg-white hover:bg-white border sm:h-7 sm:w-auto sm:px-2.5 sm:gap-2"
 				>
 					{next ? (
 						<Link href={`/learn/${courseId}/${next.id}`}>
-							Suivant <ChevronRight className="ml-1 h-4 w-4" />
+							<span className="max-sm:hidden">Suivant</span>
+							<ChevronRight className="ml-1 h-4 w-4" />
 						</Link>
 					) : (
 						<span>
-							Suivant <ChevronRight className="ml-1 h-4 w-4" />
+							<span className="max-sm:hidden">Suivant</span>
+							<ChevronRight className="ml-1 h-4 w-4" />
 						</span>
 					)}
 				</Button>

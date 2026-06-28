@@ -53,12 +53,7 @@ function TableOfContents({ items, activeId }) {
 							activeId === item.id ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
 						].join(" ")}
 					>
-						<span
-							className={[
-								"inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[11px] font-semibold",
-								activeId === item.id ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground",
-							].join(" ")}
-						>
+						<span className={["inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[11px] font-semibold"].join(" ")}>
 							{index + 1}
 						</span>
 						<span className="line-clamp-2 flex-1">{item.title}</span>
