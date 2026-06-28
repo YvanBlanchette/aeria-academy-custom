@@ -48,7 +48,7 @@ next-env.d.ts
 
 # Database backups
 backup.sql
-*.sql
+backup-*.sql
 *.dump
 
 # Uploads backup
