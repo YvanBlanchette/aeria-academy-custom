@@ -96,4 +96,10 @@ export async function createPortalSession() {
 		customer: dbUser.stripeCustomerId,
 		return_url: `${APP_URL}/dashboard?refresh=1`,
 	});
+
+	if (!portal.url) {
+		throw new Error("URL du portail Stripe manquante");
+	}
+
+	redirect(portal.url);
 }

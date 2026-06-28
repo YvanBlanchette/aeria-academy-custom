@@ -654,7 +654,7 @@ export const dict = {
 
 		// ── TARIFICATION — plans et messages d'accès ───────────────────────
 		pricing: {
-			pageTitle: "Choisis ton plan",
+			pageTitle: "Choisis ton plan d'abonnement",
 			pageSubtitle: "Accède à tous les cours ÆRIA et progresse à ton rythme. Sans engagement.",
 			canceledNotice: "Paiement annulé. Tu peux réessayer à tout moment.",
 			planCard: {
