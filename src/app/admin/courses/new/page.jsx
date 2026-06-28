@@ -1,7 +1,5 @@
 import { auth } from "@/auth";
 import { CourseForm } from "@/components/admin/course-form";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
-import { Card } from "@/components/ui/card";
 
 const metadata = {
 	title: "Création d'un Nouveau Cours",
@@ -12,12 +10,8 @@ export default async function NewCoursePage() {
 	const session = await auth();
 
 	return (
-		<DashboardLayoutRight
-			title={metadata.title}
-			subtitle={metadata.subtitle}
-			user={session?.user}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<CourseForm />
-		</DashboardLayoutRight>
+		</div>
 	);
 }

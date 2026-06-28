@@ -1,5 +1,3 @@
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
-
 export default function SettingsPage() {
 	const metadata = {
 		title: "Paramètres",
@@ -7,11 +5,8 @@ export default function SettingsPage() {
 	};
 
 	return (
-		<DashboardLayoutRight
-			title={metadata.title}
-			subtitle={metadata.subtitle}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<div>Paramètres</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

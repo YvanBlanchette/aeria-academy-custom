@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CourseCard } from "@/components/users/course-card";
@@ -24,12 +23,7 @@ export default async function MyCoursesPage() {
 	});
 
 	return (
-		<DashboardLayoutRight
-			title="Mes cours"
-			subtitle="Tous les cours auxquels tu es inscrit"
-			btnLabel="Découvrir le catalogue"
-			btnLink="/courses"
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			{enrollments.length === 0 ? (
 				<Card>
 					<CardContent className="p-12 text-center space-y-4">
@@ -55,6 +49,6 @@ export default async function MyCoursesPage() {
 					))}
 				</div>
 			)}
-		</DashboardLayoutRight>
+		</div>
 	);
 }

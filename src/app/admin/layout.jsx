@@ -9,10 +9,5 @@ export default async function AdminLayout({ children }) {
 		redirect("/");
 	}
 
-	return (
-		<div className="flex h-screen overflow-hidden">
-			<AdminSidebar user={session.user} />
-			<main className="flex-1 overflow-y-auto">{children}</main>
-		</div>
-	);
+	return <AdminSidebar user={session.user}>{children}</AdminSidebar>;
 }

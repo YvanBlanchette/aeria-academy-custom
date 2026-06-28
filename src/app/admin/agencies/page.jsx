@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2 } from "lucide-react";
@@ -27,10 +26,7 @@ export default async function AdminAgenciesPage({ searchParams }) {
 	const pendingCount = await prisma.agency.count({ where: { approved: false } });
 
 	return (
-		<DashboardLayoutRight
-			title="Agences"
-			subtitle={`${agencies.length} agence(s) ${filter === "pending" ? "en attente" : filter === "approved" ? "approuvée(s)" : "au total"}`}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<h2 className="text-3xl font-bold text-center">
 				Liste des agences {filter === "pending" ? "en attente" : filter === "approved" ? "approuvées" : "au total"}
 			</h2>
@@ -141,6 +137,6 @@ export default async function AdminAgenciesPage({ searchParams }) {
 					</Table>
 				</div>
 			)}
-		</DashboardLayoutRight>
+		</div>
 	);
 }

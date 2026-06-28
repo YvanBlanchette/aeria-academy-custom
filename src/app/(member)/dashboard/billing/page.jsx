@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,10 +23,7 @@ export default async function BillingPage() {
 	const tier = tierInfo[user.membership];
 
 	return (
-		<DashboardLayoutRight
-			title="Mon abonnement"
-			subtitle="Gère ton plan et tes paiements"
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<Card>
 				<CardHeader>
 					<div className="flex items-center justify-between">
@@ -73,6 +69,6 @@ export default async function BillingPage() {
 					</div>
 				</CardContent>
 			</Card>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

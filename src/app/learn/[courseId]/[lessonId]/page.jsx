@@ -6,7 +6,6 @@ import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { LessonPlayer } from "@/components/users/lesson-player";
 import { MarkCompleteButton } from "@/components/users/mark-complete-button";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card } from "@/components/ui/card";
 
 export default async function LessonPage({ params }) {

@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CourseForm } from "@/components/admin/course-form";
 import { ModuleManager } from "@/components/admin/module-manager";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { auth } from "@/auth";
 
 export default async function EditCoursePage({ params }) {
@@ -35,16 +34,12 @@ export default async function EditCoursePage({ params }) {
 	if (!course) notFound();
 
 	return (
-		<DashboardLayoutRight
-			title={metadata.title}
-			subtitle={metadata.subtitle}
-			user={session?.user}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<div className="flex justify-between gap-8 h-full">
 				<CourseForm course={course} />
 
 				<ModuleManager course={course} />
 			</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

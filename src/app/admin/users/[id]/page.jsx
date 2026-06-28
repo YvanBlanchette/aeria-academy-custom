@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { UserForm } from "@/components/admin/user-form";
 import { UserDeleteButton } from "@/components/admin/user-delete-button";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Button } from "@/components/ui/button";
 
 export default async function UserDetailPage({ params }) {
@@ -55,12 +54,7 @@ export default async function UserDetailPage({ params }) {
 	};
 
 	return (
-		<DashboardLayoutRight
-			title={metadata.title}
-			subtitle={metadata.subtitle}
-			image={metadata.image}
-			btnLink={metadata.btnLink}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<div className="flex items-center justify-end mb-2">
 				<Link
 					asChild
@@ -179,6 +173,6 @@ export default async function UserDetailPage({ params }) {
 					</div>
 				</div>
 			</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

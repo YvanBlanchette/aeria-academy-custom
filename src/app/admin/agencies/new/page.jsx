@@ -1,17 +1,13 @@
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { AgencyForm } from "@/components/admin/agency-form";
 
 export const metadata = { title: "Nouvelle agence — AERIA Admin" };
 
 export default function NewAgencyPage() {
 	return (
-		<DashboardLayoutRight
-			title="Créer une agence"
-			subtitle="Cette agence sera approuvée automatiquement"
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<div className="max-w-3xl">
 				<AgencyForm />
 			</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

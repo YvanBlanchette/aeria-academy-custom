@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BookOpen, User, Settings, LogOut, Award, CreditCard } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { BookOpen, LayoutDashboard, User, Settings, Award, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Logo from "@/components/logo";
+import { UserButtonClient } from "@/components/ui/user-button-client";
+import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarInset, SidebarTrigger, SidebarFooter } from "@/components/ui/sidebar";
 import { userSidebarNavItems as navItems } from "@/lib/data/navigation";
 
 const membershipLabel = {
@@ -17,63 +17,91 @@ const membershipLabel = {
 	PRIME: { label: "Prime", variant: "secondary" },
 };
 
-export function UserSidebar({ user }) {
+export function UserSidebar({ user, children }) {
 	const pathname = usePathname();
-
-	const initials = (user.name || user.email)
-		.split(" ")
-		.map((s) => s.charAt(0))
-		.join("")
-		.toUpperCase()
-		.slice(0, 2);
-
+	const activeItem = navItems.find((item) => (item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href))) || navItems[0];
 	const tier = membershipLabel[user.membership] || membershipLabel.FREE;
 
 	return (
-		<aside className="flex h-screen w-80 flex-col border-r bg-card shadow-md">
-			{/* Logo */}
-			<div className="border-b p-6 h-22.5 flex items-center justify-center">
-				<Logo
-					locale="fr"
-					scrolled
-				/>
-			</div>
-
-			{/* Navigation */}
-			<nav className="flex-1 space-y-1 p-3 overflow-y-auto">
-				{navItems.map((item) => {
-					// Active = match exact pour les routes courtes, prefix pour les longues
-					const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
-					const Icon = item.icon;
-					return (
-						<Link
-							key={item.href}
-							href={item.href}
-							className={cn(
-								"flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-								isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-							)}
-						>
-							<Icon className="h-4 w-4" />
-							{item.label}
+		<SidebarProvider
+			defaultOpen
+			style={{
+				"--sidebar-width": "22.5rem",
+				"--sidebar-width-mobile": "22.5rem",
+				"--background": "#f5f5f5",
+			}}
+		>
+			<Sidebar
+				collapsible="offcanvas"
+				className="border-r shadow-lg"
+			>
+				<SidebarHeader className="flex h-[90px] items-center justify-center border-b bg-white">
+					<Logo
+						locale="fr"
+						scrolled
+					/>
+				</SidebarHeader>
+				<SidebarContent className="bg-white">
+					<div className="space-y-1 p-3">
+						{navItems.map((item) => {
+							const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
+							const Icon = item.icon;
+							return (
+								<Link
+									key={item.href}
+									href={item.href}
+									className={cn(
+										"flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+										isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+									)}
+								>
+									<Icon className="h-4 w-4" />
+									{item.label}
+								</Link>
+							);
+						})}
+					</div>
+				</SidebarContent>
+				<SidebarFooter className="border-t bg-white">
+					<Button
+						asChild
+						variant="ghost"
+						className="w-full justify-start gap-3 px-3"
+					>
+						<Link href="/">
+							<BookOpen className="h-4 w-4" />
+							Retour au site
 						</Link>
-					);
-				})}
-			</nav>
+					</Button>
+				</SidebarFooter>
+			</Sidebar>
 
-			{/* Footer : retour site + déconnexion */}
-			<div className="border-t p-3 space-y-1">
-				<Button
-					asChild
-					variant="ghost"
-					className="w-full justify-start gap-3 px-3"
-				>
-					<Link href="/">
-						<BookOpen className="h-4 w-4" />
-						Retour au site
-					</Link>
-				</Button>
-			</div>
-		</aside>
+			<SidebarInset>
+				<header className="sticky top-0 z-10 flex h-[90px] items-center border-b bg-white shadow-sm">
+					<div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 lg:px-6">
+						<div className="flex items-center gap-3">
+							<SidebarTrigger />
+							<div>
+								<p className="text-sm font-medium text-muted-foreground">Espace membre</p>
+								<h1 className="text-xl font-semibold">{activeItem.label}</h1>
+							</div>
+						</div>
+						{user && (
+							<div className="flex items-center gap-3">
+								<div className="hidden text-right sm:block">
+									<p className="text-sm font-medium">{user.name}</p>
+									<p className="text-sm font-medium">{user.email}</p>
+								</div>
+								<UserButtonClient
+									user={user}
+									size="lg"
+								/>
+							</div>
+						)}
+					</div>
+				</header>
+				<main className="flex-1 overflow-y-auto bg-muted/20">{children}</main>
+			</SidebarInset>
+		</SidebarProvider>
 	);
 }

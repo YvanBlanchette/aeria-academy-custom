@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Building2, Mail, Phone, Globe, MapPin, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -44,11 +43,7 @@ export default async function AdminAgencyDetailPage({ params }) {
 	}
 
 	return (
-		<DashboardLayoutRight
-			title={agency.name}
-			subtitle={`Agence ${agency.approved ? "approuvée" : "en attente de validation"}`}
-			image={agency.logoUrl}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<div className="mb-4">
 				<Link
 					href="/admin/agencies"
@@ -208,6 +203,6 @@ export default async function AdminAgencyDetailPage({ params }) {
 					</Card>
 				</div>
 			</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

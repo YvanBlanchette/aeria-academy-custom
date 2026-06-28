@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { LessonRow } from "@/components/admin/lesson-row";
 import { QuizSection } from "@/components/admin/quiz-section";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 
 export default async function ModulePage({ params }) {
 	const { id: courseId, moduleId } = await params;
@@ -26,12 +25,7 @@ export default async function ModulePage({ params }) {
 	if (!mod || mod.courseId !== courseId) notFound();
 
 	return (
-		<DashboardLayoutRight
-			title={mod.title}
-			subtitle={`Module #${mod.order}`}
-			btnLabel={`← ${mod.course.title}`}
-			btnLink={`/admin/courses/${courseId}`}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<div className="space-y-8">
 				<Card>
 					<CardHeader>
@@ -71,6 +65,6 @@ export default async function ModulePage({ params }) {
 					quiz={mod.quiz}
 				/>
 			</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

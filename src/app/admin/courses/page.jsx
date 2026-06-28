@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CourseRowActions } from "@/components/admin/course-row-actions";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { auth } from "@/auth";
 
 export default async function CoursesListPage() {
@@ -22,12 +21,8 @@ export default async function CoursesListPage() {
 	};
 
 	return (
-		<DashboardLayoutRight
-			title={metadata?.title}
-			subtitle={metadata?.subtitle}
-			user={session?.user}
-		>
-			<div className="bg-neutral-50 h-[calc(100vh-90px)]">
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
+			<div className="h-[calc(100vh-90px)]">
 				<h2 className="text-3xl font-bold text-center">Liste des cours</h2>
 				<div className="flex items-center justify-end mb-4">
 					<Link
@@ -88,6 +83,6 @@ export default async function CoursesListPage() {
 					</div>
 				)}
 			</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

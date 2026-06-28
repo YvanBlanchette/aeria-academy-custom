@@ -1,4 +1,3 @@
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { prisma } from "@/lib/prisma";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -30,11 +29,8 @@ export default async function UsersPage() {
 	};
 
 	return (
-		<DashboardLayoutRight
-			title={metadata.title}
-			subtitle={metadata.subtitle}
-		>
-			<div className="bg-neutral-50 h-[calc(100vh-90px)] overflow-auto">
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
+			<div className="h-[calc(100vh-90px)] overflow-auto">
 				<h2 className="text-3xl font-bold text-center">Liste des membres</h2>
 				<div className="flex items-center justify-end mb-4">
 					<Link
@@ -97,6 +93,6 @@ export default async function UsersPage() {
 					</div>
 				)}
 			</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export const metadata = { title: "Paramètres | AERIA Voyages Academy" };
@@ -8,10 +7,7 @@ export default async function SettingsPage() {
 	const session = await auth();
 
 	return (
-		<DashboardLayoutRight
-			title="Paramètres"
-			subtitle="Préférences de compte et notifications"
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<div className="space-y-6 max-w-3xl">
 				<Card>
 					<CardHeader>
@@ -36,6 +32,6 @@ export default async function SettingsPage() {
 					</CardContent>
 				</Card>
 			</div>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

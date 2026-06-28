@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { LessonForm } from "@/components/admin/lesson-form";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card } from "@/components/ui/card";
 import { auth } from "@/auth";
 
@@ -17,13 +16,7 @@ export default async function EditLessonPage({ params }) {
 	if (!lesson || lesson.moduleId !== moduleId || lesson.module.courseId !== courseId) notFound();
 
 	return (
-		<DashboardLayoutRight
-			title="Modifier la leçon"
-			subtitle="Modifier une leçon existante"
-			btnLabel="← Retour aux modules"
-			btnLink={`/admin/courses/${courseId}/modules/${moduleId}`}
-			user={session?.user}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<Card className="w-full p-6">
 				<LessonForm
 					courseId={courseId}
@@ -31,6 +24,6 @@ export default async function EditLessonPage({ params }) {
 					lesson={lesson}
 				/>
 			</Card>
-		</DashboardLayoutRight>
+		</div>
 	);
 }

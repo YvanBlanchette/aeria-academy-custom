@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card, CardContent } from "@/components/ui/card";
 import { Award } from "lucide-react";
 
@@ -16,10 +15,7 @@ export default async function CertificatesPage() {
 	});
 
 	return (
-		<DashboardLayoutRight
-			title="Mes certificats"
-			subtitle="Les certifications que tu as obtenues"
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			{certificates.length === 0 ? (
 				<Card>
 					<CardContent className="p-12 text-center space-y-4">
@@ -51,6 +47,6 @@ export default async function CertificatesPage() {
 					))}
 				</div>
 			)}
-		</DashboardLayoutRight>
+		</div>
 	);
 }

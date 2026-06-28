@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -105,11 +104,7 @@ export default async function DashboardPage() {
 	const firstName = session.user.name?.split(" ")[0] || "étudiant";
 
 	return (
-		<DashboardLayoutRight
-			title={`Bonjour, ${firstName}`}
-			subtitle="Voici ton activité sur AERIA Academy"
-			user={session.user}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			{/* Bandeau "Reprendre où on s'est arrêté" si applicable */}
 			{recentProgress && (
 				<Card className="mb-6 border-primary/20 bg-linear-to-br from-primary/5 to-transparent">
@@ -294,6 +289,6 @@ export default async function DashboardPage() {
 					</div>
 				</section>
 			)}
-		</DashboardLayoutRight>
+		</div>
 	);
 }
