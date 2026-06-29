@@ -51,6 +51,7 @@ model User {
   progress      LessonProgress[]
   quizAttempts  QuizAttempt[]
   certificates  Certificate[]
+  articles      Article[] 
 }
 
 model UserProfile {
@@ -290,4 +291,60 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Article {
+  id            String          @id @default(cuid())
+  slug          String          @unique
+  title         String
+  excerpt       String?         // résumé court pour les listes (max ~300 chars)
+  coverImage    String?         // image de couverture
+  content       String          @db.Text  // markdown enrichi
+  
+  // Publication
+  published     Boolean         @default(false)
+  publishedAt   DateTime?
+  // Prévu phase 2 : scheduledFor DateTime?
+  
+  // Accès
+  requiredTier  MembershipTier  @default(FREE)
+  
+  // Auteur
+  authorId      String
+  author        User            @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  
+  // Catégorisation
+  tags          ArticleTag[]
+  
+  // Stats (phase 2)
+  viewCount     Int             @default(0)
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  @@index([published, publishedAt])
+  @@index([requiredTier])
+  @@index([authorId])
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  slug      String       @unique
+  name      String
+  color     String?      // hex color pour badges, optionnel
+  
+  articles  ArticleTag[]
+  
+  createdAt DateTime     @default(now())
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([articleId, tagId])
+  @@index([tagId])
 }
