@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createPortalSession } from "@/app/(marketing)/pricing/actions";
 
-export const metadata = { title: "Abonnement | AERIA Voyages Academy" };
+export const metadata = { title: "Abonnement | ÆRIA Voyages Academy" };
 
 const tierInfo = {
 	FREE: { label: "Gratuit", description: "Accès aux cours gratuits uniquement" },

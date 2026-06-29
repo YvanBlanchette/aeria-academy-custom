@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-export const metadata = { title: "Paramètres | AERIA Voyages Academy" };
+export const metadata = { title: "Paramètres | ÆRIA Voyages Academy" };
 
 export default async function SettingsPage() {
 	const session = await auth();

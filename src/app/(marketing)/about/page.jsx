@@ -5,7 +5,7 @@ import About from "@/components/partials/home/About";
 import { dict } from "@/lib/i18n";
 
 export const metadata = {
-	title: "A propos | AERIA Voyages Academy",
+	title: "A propos | ÆRIA Voyages Academy",
 };
 
 export default function AboutPage({ locale = "fr" }) {

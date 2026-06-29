@@ -4,7 +4,7 @@ import { dict } from "@/lib/i18n";
 import { submitContactForm } from "./actions";
 
 export const metadata = {
-	title: "Contact | AERIA Voyages Academy",
+	title: "Contact | ÆRIA Voyages Academy",
 };
 
 export default function ContactPage({ locale = "fr" }) {

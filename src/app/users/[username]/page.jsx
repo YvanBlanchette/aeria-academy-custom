@@ -37,7 +37,7 @@ export async function generateMetadata({ params }) {
 	}
 
 	return {
-		title: `${user.name} | AERIA Voyages Academy`,
+		title: `${user.name} | ÆRIA Voyages Academy`,
 		description: user.profile?.bio?.slice(0, 160) || `Profil de ${user.name}`,
 	};
 }

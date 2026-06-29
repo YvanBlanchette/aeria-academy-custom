@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CourseCard } from "@/components/users/course-card";
 
-export const metadata = { title: "Mes cours | AERIA Voyages Academy" };
+export const metadata = { title: "Mes cours | ÆRIA Voyages Academy" };
 
 export default async function MyCoursesPage() {
 	const session = await auth();

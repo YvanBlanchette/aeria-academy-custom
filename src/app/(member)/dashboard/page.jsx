@@ -6,15 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CourseCard } from "@/components/users/course-card";
-import { BookOpen, Award, Sparkles, Clock, TrendingUp, ArrowRight, GraduationCap } from "lucide-react";
+import { BookOpen, Award, Sparkles, Clock, TrendingUp, ArrowRight, GraduationCap, FileText } from "lucide-react";
 
-export const metadata = { title: "Tableau de bord — AERIA Academy" };
+export const metadata = { title: "Tableau de bord | ÆRIA Voyages Academy" };
 
 const tierInfo = {
 	FREE: { label: "Gratuit", variant: "outline" },
 	ACADEMY: { label: "Académie", variant: "default" },
 	PRIME: { label: "Prime", variant: "secondary" },
 };
+
+// Au début, dans le Promise.all :
+const recentArticles = await prisma.article.findMany({
+	where: { published: true },
+	include: {
+		tags: { include: { tag: true } },
+	},
+	orderBy: { publishedAt: "desc" },
+	take: 3,
+});
 
 export default async function DashboardPage() {
 	const session = await auth();
@@ -229,7 +239,7 @@ export default async function DashboardPage() {
 								showDefaultFooter={false}
 								className="group transition-shadow hover:shadow-md"
 								thumbnailClassName="-translate-y-4"
-								imageClassName="group-hover:scale-105 transition-transform duration-300"
+								imageClassName="transition-transform duration-300"
 								contentClassName="p-4 space-y-3"
 							>
 								<div className="space-y-1.5">
@@ -274,7 +284,7 @@ export default async function DashboardPage() {
 								href={`/courses/${course.slug}`}
 								className="group transition-shadow hover:shadow-md"
 								thumbnailClassName="-translate-y-4"
-								imageClassName="group-hover:scale-105 transition-transform duration-300"
+								imageClassName="transition-transform duration-300"
 								contentClassName="p-4 space-y-2"
 								footer={
 									<div className="flex w-full items-center justify-between gap-2">
@@ -285,6 +295,49 @@ export default async function DashboardPage() {
 									</div>
 								}
 							/>
+						))}
+					</div>
+				</section>
+			)}
+
+			{recentArticles.length > 0 && (
+				<section className="mb-8">
+					<div className="flex items-center justify-between mb-4">
+						<div className="flex items-center gap-2">
+							<FileText className="h-5 w-5 text-primary" />
+							<h2 className="text-2xl font-bold">Dernières ressources</h2>
+						</div>
+						<Button
+							asChild
+							variant="ghost"
+						>
+							<Link href="/resources">Voir tout →</Link>
+						</Button>
+					</div>
+
+					<div className="grid gap-4 md:grid-cols-3">
+						{recentArticles.map((article) => (
+							<Link
+								key={article.id}
+								href={`/resources/${article.slug}`}
+							>
+								<Card className="h-full overflow-hidden group hover:shadow-lg transition-shadow">
+									{article.coverImage && (
+										<div className="aspect-video w-full overflow-hidden bg-muted -translate-y-4">
+											{/* eslint-disable-next-line @next/next/no-img-element */}
+											<img
+												src={article.coverImage}
+												alt={article.title}
+												className="h-full w-full object-cover transition-transform duration-300"
+											/>
+										</div>
+									)}
+									<CardContent className="p-4 space-y-2">
+										<h3 className="font-semibold line-clamp-2 min-h-12">{article.title}</h3>
+										{article.excerpt && <p className="text-sm text-muted-foreground line-clamp-2">{article.excerpt}</p>}
+									</CardContent>
+								</Card>
+							</Link>
 						))}
 					</div>
 				</section>

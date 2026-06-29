@@ -15,6 +15,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { uploadArticleMedia } from "@/app/admin/articles/upload-actions";
 import { createArticle, updateArticle } from "@/app/admin/articles/actions";
 import { ArticleContent } from "@/components/articles/article-content";
+import clsx from "clsx";
 
 export function ArticleForm({ article, allTags = [] }) {
 	const router = useRouter();
@@ -119,7 +120,7 @@ export function ArticleForm({ article, allTags = [] }) {
 			{/* Card 1 : Métadonnées */}
 			<Card>
 				<CardHeader>
-					<CardTitle>Informations</CardTitle>
+					<CardTitle>Informations de base</CardTitle>
 					<CardDescription>Titre, résumé, image de couverture</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -131,6 +132,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							onChange={(e) => setTitle(e.target.value)}
 							placeholder="Le titre de ton article"
 							required
+							className="bg-neutral-50 shadow-inner"
 						/>
 					</div>
 
@@ -142,6 +144,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							onChange={(e) => setExcerpt(e.target.value)}
 							placeholder="Court résumé affiché dans les listes. Si vide, généré automatiquement."
 							rows={2}
+							className="bg-neutral-50 shadow-inner"
 						/>
 					</div>
 
@@ -151,6 +154,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							value={coverImage}
 							onChange={setCoverImage}
 							name="coverImage"
+							className="bg-neutral-50 shadow-inner"
 						/>
 					</div>
 				</CardContent>
@@ -162,13 +166,17 @@ export function ArticleForm({ article, allTags = [] }) {
 					<div className="flex items-center justify-between">
 						<div>
 							<CardTitle>Contenu</CardTitle>
-							<CardDescription>Markdown enrichi avec directives ::audio, ::video, ::image, ::pdf, ::callout, ::quote</CardDescription>
+							<CardDescription>Markdown enrichi avec directives</CardDescription>
 						</div>
 						<Button
 							type="button"
 							variant="outline"
 							size="sm"
 							onClick={() => setShowPreview((v) => !v)}
+							className={clsx(
+								"text-neutral-900 active:shadow-inner active:bg-neutral-200",
+								showPreview ? "shadow-inner bg-neutral-200 hover:bg-neutral-200" : "shadow-sm bg-white hover:bg-neutral-50",
+							)}
 						>
 							{showPreview ? <EyeOff className="mr-1 h-4 w-4" /> : <Eye className="mr-1 h-4 w-4" />}
 							{showPreview ? "Éditeur" : "Aperçu"}
@@ -183,6 +191,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							variant="outline"
 							size="sm"
 							onClick={() => insertAtCursor("\n## Sous-titre\n\n")}
+							className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 						>
 							Titre
 						</Button>
@@ -191,6 +200,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							variant="outline"
 							size="sm"
 							onClick={() => handleMediaUpload("image", "image/*")}
+							className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 						>
 							+ Image
 						</Button>
@@ -199,6 +209,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							variant="outline"
 							size="sm"
 							onClick={() => handleMediaUpload("audio", "audio/*")}
+							className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 						>
 							+ Audio
 						</Button>
@@ -207,6 +218,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							variant="outline"
 							size="sm"
 							onClick={() => handleMediaUpload("pdf", "application/pdf")}
+							className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 						>
 							+ PDF
 						</Button>
@@ -215,6 +227,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							variant="outline"
 							size="sm"
 							onClick={() => insertAtCursor("\n::video[https://youtube.com/watch?v=ID]\n")}
+							className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 						>
 							+ Vidéo YouTube
 						</Button>
@@ -223,6 +236,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							variant="outline"
 							size="sm"
 							onClick={() => insertAtCursor('\n::callout[Information importante]{type="info"}\n')}
+							className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 						>
 							+ Callout
 						</Button>
@@ -231,6 +245,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							variant="outline"
 							size="sm"
 							onClick={() => insertAtCursor('\n::quote[Citation]{author="Auteur"}\n')}
+							className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 						>
 							+ Citation
 						</Button>
@@ -248,7 +263,7 @@ export function ArticleForm({ article, allTags = [] }) {
 							onChange={(e) => setContent(e.target.value)}
 							placeholder="Commence à écrire ton article en markdown..."
 							rows={20}
-							className="font-mono text-sm"
+							className="font-mono text-sm bg-neutral-50 shadow-inner"
 							required
 						/>
 					)}
@@ -306,6 +321,7 @@ export function ArticleForm({ article, allTags = [] }) {
 					type="button"
 					variant="outline"
 					onClick={() => router.push("/admin/articles")}
+					className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
 				>
 					Annuler
 				</Button>

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Award } from "lucide-react";
 
-export const metadata = { title: "Certificats | AERIA Voyages Academy" };
+export const metadata = { title: "Certificats | ÆRIA Voyages Academy" };
 
 export default async function CertificatesPage() {
 	const session = await auth();

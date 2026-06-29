@@ -31,51 +31,59 @@ export default async function AdminArticlesPage({ searchParams }) {
 	const draftCount = await prisma.article.count({ where: { published: false } });
 
 	return (
-		<DashboardLayoutRight
-			title="Articles"
-			subtitle={`${articles.length} article(s)`}
-			btnLabel="+ Nouvel article"
-			btnLink="/admin/articles/new"
-		>
-			<div className="flex gap-2 mb-6">
-				<Link
-					href="/admin/articles"
-					className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-						filter === "all" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/70"
-					}`}
-				>
-					Tous
-				</Link>
-				<Link
-					href="/admin/articles?filter=draft"
-					className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-						filter === "draft" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/70"
-					}`}
-				>
-					Brouillons
-					{draftCount > 0 && (
-						<Badge
-							variant="secondary"
-							className="ml-2"
-						>
-							{draftCount}
-						</Badge>
-					)}
-				</Link>
-				<Link
-					href="/admin/articles?filter=published"
-					className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-						filter === "published" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/70"
-					}`}
-				>
-					Publiés
-				</Link>
-				<Link
-					href="/admin/articles/tags"
-					className="ml-auto px-3 py-1.5 rounded-md text-sm font-medium bg-muted hover:bg-muted/70"
-				>
-					Gérer les tags →
-				</Link>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
+			<h2 className="text-3xl font-bold text-center">Liste des articles {filter === "published" ? "publiés" : filter === "draft" ? "brouillons" : ""}</h2>
+			<div className="flex items-center justify-between mb-4 w-full">
+				{/* Filtres */}
+				<div className="flex justify-start items-center gap-2">
+					<Link
+						href="/admin/articles"
+						className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+							filter === "all" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/70"
+						}`}
+					>
+						Tous
+					</Link>
+					<Link
+						href="/admin/articles?filter=draft"
+						className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+							filter === "draft" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/70"
+						}`}
+					>
+						Brouillons
+						{draftCount > 0 && (
+							<Badge
+								variant="secondary"
+								className="ml-2"
+							>
+								{draftCount}
+							</Badge>
+						)}
+					</Link>
+					<Link
+						href="/admin/articles?filter=published"
+						className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+							filter === "published" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/70"
+						}`}
+					>
+						Publiés
+					</Link>
+				</div>
+
+				<div className="flex justify-end items-center gap-2">
+					<Link
+						href="/admin/articles/new"
+						className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground`}
+					>
+						+ Nouvel Article
+					</Link>
+					<Link
+						href="/admin/articles/tags"
+						className="px-3 py-1.5 rounded-md text-sm font-medium bg-muted hover:bg-muted/70"
+					>
+						Gérer les tags →
+					</Link>
+				</div>
 			</div>
 
 			{articles.length === 0 ? (
@@ -85,20 +93,20 @@ export default async function AdminArticlesPage({ searchParams }) {
 			) : (
 				<div className="rounded-lg border bg-card">
 					<Table>
-						<TableHeader>
+						<TableHeader className="bg-[#171717]  hover:bg-[#171717] text-white hover:pointer-events-none">
 							<TableRow>
-								<TableHead>Titre</TableHead>
-								<TableHead>Tags</TableHead>
-								<TableHead>Accès</TableHead>
-								<TableHead>Statut</TableHead>
-								<TableHead>Auteur</TableHead>
-								<TableHead>Mis à jour</TableHead>
+								<TableHead className="text-white border-r border-white text-center">Titre</TableHead>
+								<TableHead className="text-white border-r border-white text-center">Tags</TableHead>
+								<TableHead className="text-white border-r border-white text-center">Accès</TableHead>
+								<TableHead className="text-white border-r border-white text-center">Statut</TableHead>
+								<TableHead className="text-white border-r border-white text-center">Auteur</TableHead>
+								<TableHead className="text-white border-r border-white text-center">Mis à jour</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{articles.map((a) => (
 								<TableRow key={a.id}>
-									<TableCell>
+									<TableCell className="text-center border">
 										<Link
 											href={`/admin/articles/${a.id}`}
 											className="font-medium hover:underline"
@@ -107,7 +115,7 @@ export default async function AdminArticlesPage({ searchParams }) {
 										</Link>
 										<p className="text-xs text-muted-foreground">/{a.slug}</p>
 									</TableCell>
-									<TableCell>
+									<TableCell className="text-center border">
 										<div className="flex flex-wrap gap-1">
 											{a.tags.map(({ tag }) => (
 												<Badge
@@ -120,10 +128,10 @@ export default async function AdminArticlesPage({ searchParams }) {
 											))}
 										</div>
 									</TableCell>
-									<TableCell>
+									<TableCell className="text-center border">
 										<Badge variant={tierColors[a.requiredTier]}>{a.requiredTier}</Badge>
 									</TableCell>
-									<TableCell>
+									<TableCell className="text-center border">
 										<Badge variant={a.published ? "default" : "secondary"}>{a.published ? "Publié" : "Brouillon"}</Badge>
 									</TableCell>
 									<TableCell className="text-sm">{a.author.name}</TableCell>
@@ -134,6 +142,6 @@ export default async function AdminArticlesPage({ searchParams }) {
 					</Table>
 				</div>
 			)}
-		</DashboardLayoutRight>
+		</div>
 	);
 }

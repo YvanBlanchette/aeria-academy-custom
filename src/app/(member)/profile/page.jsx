@@ -5,7 +5,7 @@ import { ProfileForm } from "@/components/profile/profile-form";
 import { AgencySelector } from "@/components/profile/agency-selector";
 
 export const metadata = {
-	title: "Mon profil | AERIA Voyages Academy",
+	title: "Mon profil | ÆRIA Voyages Academy",
 };
 
 export default async function ProfilePage() {
