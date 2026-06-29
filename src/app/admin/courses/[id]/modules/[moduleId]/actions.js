@@ -22,6 +22,11 @@ const lessonSchema = z.object({
 		.refine((val) => val === "" || val.startsWith("/uploads/") || /^https?:\/\//.test(val), { message: "URL audio invalide" })
 		.optional()
 		.nullable(),
+	audioUrlExpress: z
+		.string()
+		.refine((val) => val === "" || val.startsWith("/uploads/") || /^https?:\/\//.test(val), { message: "URL audio express invalide" })
+		.optional()
+		.nullable(),
 	duration: z.coerce.number().int().min(0).optional().nullable(),
 });
 
@@ -32,6 +37,7 @@ export async function createLesson(courseId, moduleId, formData) {
 		type: formData.get("type"),
 		content: formData.get("content"),
 		audioUrl: formData.get("audioUrl") || "",
+		audioUrlExpress: formData.get("audioUrlExpress") || "",
 		duration: formData.get("duration") || 0,
 	});
 	if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -47,6 +53,7 @@ export async function createLesson(courseId, moduleId, formData) {
 			type: parsed.data.type,
 			content: parsed.data.content,
 			audioUrl: parsed.data.audioUrl || null,
+			audioUrlExpress: parsed.data.audioUrlExpress || null,
 			duration: parsed.data.duration || null,
 			order: (last?.order || 0) + 1,
 			moduleId,
@@ -64,6 +71,7 @@ export async function updateLesson(courseId, moduleId, lessonId, formData) {
 		type: formData.get("type"),
 		content: formData.get("content"),
 		audioUrl: formData.get("audioUrl") || "",
+		audioUrlExpress: formData.get("audioUrlExpress") || "",
 		duration: formData.get("duration") || 0,
 	});
 	if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -75,6 +83,7 @@ export async function updateLesson(courseId, moduleId, lessonId, formData) {
 			type: parsed.data.type,
 			content: parsed.data.content,
 			audioUrl: parsed.data.audioUrl || null,
+			audioUrlExpress: parsed.data.audioUrlExpress || null,
 			duration: parsed.data.duration || null,
 		},
 	});

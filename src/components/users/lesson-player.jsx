@@ -357,6 +357,7 @@ export function LessonPlayer({ lesson, prevHref, nextHref }) {
 			{lesson.audioUrl && lesson.type !== "AUDIO" && (
 				<ProtectedAudioPlayer
 					src={lesson.audioUrl}
+					srcExpress={lesson.audioUrlExpress}
 					title={`${lesson.title}`}
 					prevHref={prevHref}
 					nextHref={nextHref}

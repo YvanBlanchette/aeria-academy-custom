@@ -24,6 +24,7 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 	const [loading, setLoading] = useState(false);
 	const [type, setType] = useState(lesson?.type || "VIDEO");
 	const [audioUrl, setAudioUrl] = useState(lesson?.audioUrl || "");
+	const [audioUrlExpress, setAudioUrlExpress] = useState(lesson?.audioUrlExpress || "");
 	const isEdit = !!lesson;
 
 	async function handleSubmit(e) {
@@ -33,7 +34,7 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 		const fd = new FormData(e.currentTarget);
 		fd.set("content", content);
 		fd.set("audioUrl", audioUrl);
-
+		fd.set("audioUrlExpress", audioUrlExpress);
 		const result = isEdit ? await updateLesson(courseId, moduleId, lesson.id, fd) : await createLesson(courseId, moduleId, fd);
 
 		if (result?.error) {
@@ -113,18 +114,31 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 
 			{/* Capsule audio optionnelle (pour les leçons TEXT principalement) */}
 			{type === "TEXT" && (
-				<div className="space-y-2">
-					<Label htmlFor="audioUrl">Capsule audio (optionnel)</Label>
-					<p className="text-xs text-muted-foreground">
-						Ajoute une capsule audio qui jouera en haut de la leçon (utile pour les résumés ou explications oralisées avec NotebookLM).
-					</p>
-					<LessonFileUpload
-						type="AUDIO"
-						value={audioUrl}
-						onChange={setAudioUrl}
-						name="audioUrl"
-					/>
-				</div>
+				<>
+					<div className="space-y-2">
+						<Label htmlFor="audioUrl">Capsule audio (version régulière optionnel)</Label>
+						<p className="text-xs text-muted-foreground">Version principale de la capsule audio, jouée par défaut.</p>
+						<LessonFileUpload
+							type="AUDIO"
+							value={audioUrl}
+							onChange={setAudioUrl}
+							name="audioUrl"
+						/>
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="audioUrlExpress">Capsule audio (version express optionnel)</Label>
+						<p className="text-xs text-muted-foreground">
+							Version courte ou condensée. L&apos;étudiant peut basculer entre les deux versions depuis le lecteur.
+						</p>
+						<LessonFileUpload
+							type="AUDIO"
+							value={audioUrlExpress}
+							onChange={setAudioUrlExpress}
+							name="audioUrlExpress"
+						/>
+					</div>
+				</>
 			)}
 
 			<div className="space-y-2">

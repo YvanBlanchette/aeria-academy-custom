@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRef, useEffect, useState } from "react";
-import { Play, Pause, Volume2, VolumeX, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Loader2, ChevronLeft, ChevronRight, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
+import clsx from "clsx";
+import { motion } from "framer-motion";
 
 function normalizeAudioSrc(value) {
 	if (typeof value !== "string") return "";
@@ -20,9 +22,17 @@ function normalizeAudioSrc(value) {
 	return trimmed;
 }
 
-export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = null, nextHref = null }) {
+export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio", prevHref = null, nextHref = null }) {
 	const audioRef = useRef(null);
-	const normalizedSrc = normalizeAudioSrc(src);
+
+	// State pour la version active
+	const [isExpress, setIsExpress] = useState(false);
+
+	// Détermine la source active selon le toggle
+	const activeSrc = isExpress && srcExpress ? srcExpress : src;
+	const normalizedSrc = normalizeAudioSrc(activeSrc);
+
+	const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
 	const [playing, setPlaying] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [currentTime, setCurrentTime] = useState(0);
@@ -30,6 +40,7 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 	const [volume, setVolume] = useState(1);
 	const [muted, setMuted] = useState(false);
 	const [error, setError] = useState(null);
+	const [playbackRate, setPlaybackRate] = useState(1);
 
 	useEffect(() => {
 		const audio = audioRef.current;
@@ -40,9 +51,7 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 		setDuration(0);
 		setError(null);
 
-		if (!normalizedSrc) {
-			return;
-		}
+		if (!normalizedSrc) return;
 
 		const markReady = () => {
 			setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
@@ -51,7 +60,14 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 
 		const onLoadedMetadata = markReady;
 		const onLoadedData = markReady;
-		const onCanPlay = markReady;
+		const onCanPlay = () => {
+			markReady();
+			// Si on doit auto-play (après un toggle), lance la lecture
+			if (shouldAutoPlay) {
+				audio.play().catch(() => {});
+				setShouldAutoPlay(false);
+			}
+		};
 		const onDurationChange = () => {
 			if (Number.isFinite(audio.duration)) {
 				setDuration(audio.duration);
@@ -80,6 +96,10 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 
 		if (audio.readyState >= 1) {
 			markReady();
+			if (shouldAutoPlay) {
+				audio.play().catch(() => {});
+				setShouldAutoPlay(false);
+			}
 		} else {
 			audio.load();
 		}
@@ -96,7 +116,7 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 			audio.removeEventListener("waiting", onWaiting);
 			audio.removeEventListener("error", onError);
 		};
-	}, [normalizedSrc]);
+	}, [normalizedSrc, shouldAutoPlay]);
 
 	async function togglePlay() {
 		const audio = audioRef.current;
@@ -147,6 +167,16 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 		const audio = audioRef.current;
 		if (!audio) return;
 		audio.playbackRate = rate;
+		setPlaybackRate(rate);
+	}
+
+	function toggleVersion(toExpress) {
+		if (toExpress === isExpress) return;
+		if (toExpress && !srcExpress) return;
+
+		// Si on est en lecture, on veut continuer après le switch
+		setShouldAutoPlay(playing);
+		setIsExpress(toExpress);
 	}
 
 	function formatTime(seconds) {
@@ -196,45 +226,84 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 				{/* AUDIO INFO */}
 				<div className="flex items-center gap-3">
 					<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
-						<Volume2 className="h-5 w-5 text-primary" />
+						<Music className="h-5 w-5 text-primary" />
 					</div>
 					<div className="flex-1 min-w-0">
-						<p className="text-xs uppercase tracking-wider text-muted-foreground">Capsule audio</p>
-						<p className="text-sm font-medium truncate">{title}</p>
+						<p className="text-xs uppercase tracking-wider text-neutral-700">Capsule audio</p>
+						<p className="text-base font-medium truncate">{title}</p>
 					</div>
 				</div>
 
-				{/* VOLUME CONTROLS */}
-				<div className="flex items-center gap-1 self-end sm:self-auto">
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon"
-						onClick={toggleMute}
-						className="h-8 w-8"
-					>
-						{muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-					</Button>
-					<div className="w-24 sm:w-20">
-						<Slider
-							value={[muted ? 0 : volume]}
-							max={1}
-							step={0.05}
-							onValueChange={handleVolumeChange}
-						/>
+				<div className="flex gap-4 justify-end">
+					{/* VOLUME CONTROLS */}
+					<div className="flex items-center gap-1 self-end sm:self-auto">
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							onClick={toggleMute}
+							className="h-8 w-8 cursor-pointer"
+						>
+							{muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+						</Button>
+						<div className="w-24 sm:w-20">
+							<Slider
+								value={[muted ? 0 : volume]}
+								max={1}
+								step={0.05}
+								onValueChange={handleVolumeChange}
+								className="cursor-pointer"
+							/>
+						</div>
 					</div>
+
+					{srcExpress && (
+						<div className="relative flex items-center rounded-full border border-neutral-400/50 bg-white/40 p-1 backdrop-blur-sm min-w-[150px]">
+							{/* Pill animé qui glisse */}
+							<motion.div
+								layout
+								className="absolute top-1 bottom-1 bg-neutral-900 rounded-full"
+								style={{
+									width: `calc(50% - 0.25rem)`,
+									left: `calc(${(isExpress ? 1 : 0) * 50}% + 0.125rem)`,
+								}}
+								transition={{ type: "spring", stiffness: 380, damping: 30 }}
+							/>
+
+							<button
+								type="button"
+								className={clsx(
+									"relative z-10 cursor-pointer rounded-full px-3 py-1 flex-1 text-xs font-medium transition-colors",
+									!isExpress ? "text-white" : "text-neutral-700 hover:text-neutral-900",
+								)}
+								onClick={() => toggleVersion(false)}
+							>
+								Régulier
+							</button>
+							<button
+								type="button"
+								className={clsx(
+									"relative z-10 cursor-pointer rounded-full px-3 py-1 flex-1 text-xs font-medium transition-colors",
+									isExpress ? "text-white" : "text-neutral-700 hover:text-neutral-900",
+								)}
+								onClick={() => toggleVersion(true)}
+							>
+								Express
+							</button>
+						</div>
+					)}
 				</div>
 			</div>
 
-			<div className="px-4 pb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-2">
-				{/* PLAY/PAUSE BUTTON */}
+			<div className="px-4 flex -mt-4 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-2">
+				{/* CONTROL BUTTONS */}
 				<div className="flex justify-start items-center gap-1.5">
 					<Button
 						asChild
 						variant="outline"
 						size="icon"
 						disabled={!prevHref}
-						className="h-10 w-10 rounded-full"
+						className="h-8 w-8 rounded-full bg-white shadow-sm hover:shadow-none active:shadow-inner active:bg-neutral-200"
 					>
 						{prevHref ? (
 							<Link
@@ -265,7 +334,7 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 						variant="outline"
 						size="icon"
 						disabled={!nextHref}
-						className="h-10 w-10 rounded-full"
+						className="h-8 w-8 rounded-full bg-white shadow-sm hover:shadow-none active:shadow-inner active:bg-neutral-200"
 					>
 						{nextHref ? (
 							<Link
@@ -291,23 +360,40 @@ export function ProtectedAudioPlayer({ src, title = "Capsule audio", prevHref = 
 						step={0.1}
 						onValueChange={handleSeek}
 						disabled={loading}
-						className="flex-1"
+						className="flex-1 cursor-pointer"
 					/>
 					<span className="text-xs text-muted-foreground w-10 tabular-nums">{formatTime(duration)}</span>
 				</div>
 
-				{/* VITESSE DE LECTURE */}
-				<div className="flex w-full items-center justify-end gap-1 md:w-auto">
-					{[0.75, 1, 1.25].map((rate) => (
-						<button
-							key={rate}
-							type="button"
-							onClick={() => changeSpeed(rate)}
-							className="text-xs px-2 py-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
-						>
-							{rate}x
-						</button>
-					))}
+				{/* VITESSE DE LECTURE — pill qui glisse */}
+				<div className="w-full md:w-auto flex justify-end">
+					<div className="relative flex items-center bg-neutral-300 rounded-full shadow-inner p-1 min-w-[180px]">
+						{/* Pill animé */}
+						<motion.div
+							layout
+							className="absolute top-1 bottom-1 bg-neutral-100 rounded-full shadow-sm"
+							style={{
+								width: `calc(${100 / 3}% - 0.25rem)`,
+								left: `calc(${[0.75, 1, 1.25].indexOf(playbackRate) * (100 / 3)}% + 0.125rem)`,
+							}}
+							transition={{ type: "spring", stiffness: 380, damping: 30 }}
+						/>
+
+						{/* Boutons */}
+						{[0.75, 1, 1.25].map((rate) => (
+							<button
+								key={rate}
+								type="button"
+								onClick={() => changeSpeed(rate)}
+								className={clsx(
+									"relative z-10 flex-1 text-xs px-3 py-1 rounded-full transition-colors cursor-pointer",
+									rate === playbackRate ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{rate}x
+							</button>
+						))}
+					</div>
 				</div>
 			</div>
 		</Card>
