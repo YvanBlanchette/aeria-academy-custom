@@ -1,8 +1,9 @@
-import { LayoutDashboard, BookOpen, Users, Settings, Award, User, CreditCard, Building2 } from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, Settings, Award, User, CreditCard, Building2, FileText } from "lucide-react";
 
 export const adminSidebarNavItems = [
 	{ href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
 	{ href: "/admin/courses", label: "Cours", icon: BookOpen },
+	{ href: "/admin/articles", label: "Articles", icon: FileText },
 	{ href: "/admin/users", label: "Utilisateurs", icon: Users },
 	{ href: "/admin/agencies", label: "Agences", icon: Building2 },
 	{ href: "/admin/settings", label: "Paramètres", icon: Settings },
