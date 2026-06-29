@@ -13,7 +13,7 @@ const ALLOWED_TYPES = {
 		subdir: "images",
 	},
 	audio: {
-		mimes: ["audio/mpeg", "audio/mp4", "audio/wav", "audio/ogg", "audio/webm"],
+		mimes: ["audio/mpeg", "audio/mp4", "audio/wav", "audio/ogg", "audio/webm", "audio/opus"],
 		maxSize: 50 * 1024 * 1024,
 		subdir: "audio",
 	},
