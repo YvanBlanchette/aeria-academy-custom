@@ -23,6 +23,7 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 	const [content, setContent] = useState(lesson?.content || "");
 	const [loading, setLoading] = useState(false);
 	const [type, setType] = useState(lesson?.type || "VIDEO");
+	const [audioUrl, setAudioUrl] = useState(lesson?.audioUrl || "");
 	const isEdit = !!lesson;
 
 	async function handleSubmit(e) {
@@ -31,6 +32,7 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 
 		const fd = new FormData(e.currentTarget);
 		fd.set("content", content);
+		fd.set("audioUrl", audioUrl);
 
 		const result = isEdit ? await updateLesson(courseId, moduleId, lesson.id, fd) : await createLesson(courseId, moduleId, fd);
 
@@ -108,6 +110,22 @@ export function LessonForm({ courseId, moduleId, lesson }) {
 					/>
 				)}
 			</div>
+
+			{/* Capsule audio optionnelle (pour les leçons TEXT principalement) */}
+			{type === "TEXT" && (
+				<div className="space-y-2">
+					<Label htmlFor="audioUrl">Capsule audio (optionnel)</Label>
+					<p className="text-xs text-muted-foreground">
+						Ajoute une capsule audio qui jouera en haut de la leçon (utile pour les résumés ou explications oralisées avec NotebookLM).
+					</p>
+					<LessonFileUpload
+						type="AUDIO"
+						value={audioUrl}
+						onChange={setAudioUrl}
+						name="audioUrl"
+					/>
+				</div>
+			)}
 
 			<div className="space-y-2">
 				<Label htmlFor="duration">Durée (en secondes)</Label>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { canAccessCourse } from "@/lib/access";
 import { LearnShell } from "@/components/users/learn-shell";
+import { UserWatermark } from "@/components/users/user-watermark";
 
 export default async function LearnLayout({ children, params }) {
 	const { courseId } = await params;
@@ -65,6 +66,7 @@ export default async function LearnLayout({ children, params }) {
 			defaultOpen={sidebarOpen}
 			session={session}
 		>
+			<UserWatermark user={session.user} />
 			{children}
 		</LearnShell>
 	);

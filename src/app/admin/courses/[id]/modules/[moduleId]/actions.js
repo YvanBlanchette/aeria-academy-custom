@@ -14,9 +14,14 @@ async function requireAdmin() {
 }
 
 const lessonSchema = z.object({
-	title: z.string().min(3, "Titre trop court"),
+	title: z.string().min(3).max(200),
 	type: z.enum(["VIDEO", "AUDIO", "TEXT", "PDF"]),
-	content: z.string().min(1, "Contenu requis"),
+	content: z.string().min(1),
+	audioUrl: z
+		.string()
+		.refine((val) => val === "" || val.startsWith("/uploads/") || /^https?:\/\//.test(val), { message: "URL audio invalide" })
+		.optional()
+		.nullable(),
 	duration: z.coerce.number().int().min(0).optional().nullable(),
 });
 
@@ -26,6 +31,7 @@ export async function createLesson(courseId, moduleId, formData) {
 		title: formData.get("title"),
 		type: formData.get("type"),
 		content: formData.get("content"),
+		audioUrl: formData.get("audioUrl") || "",
 		duration: formData.get("duration") || 0,
 	});
 	if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -38,6 +44,7 @@ export async function createLesson(courseId, moduleId, formData) {
 	await prisma.lesson.create({
 		data: {
 			...parsed.data,
+			audioUrl: audioUrl || null,
 			duration: parsed.data.duration || null,
 			order: (last?.order || 0) + 1,
 			moduleId,

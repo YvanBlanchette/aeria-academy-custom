@@ -163,6 +163,7 @@ model Lesson {
   title     String
   type      LessonType
   content   String     // URL média ou texte
+  audioUrl  String?
   duration  Int?       // en secondes
   order     Int
   moduleId  String

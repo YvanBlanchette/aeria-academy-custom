@@ -50,6 +50,7 @@ export default async function LessonPage({ params }) {
 	});
 	const isCompleted = progress?.completed || false;
 
+	// JSX code for the lesson page
 	return (
 		<div className="container w-[90%] lg:w-full max-w-7xl mx-auto space-y-6 py-6">
 			<Card className="w-full px-12 py-10 rounded bg-white shadow-md">

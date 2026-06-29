@@ -8,6 +8,7 @@ import remarkGfm from "remark-gfm";
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ProtectedAudioPlayer } from "./protected-audio-player";
 
 function slugifyHeading(value) {
 	return value
@@ -128,15 +129,12 @@ function VideoPlayer({ url }) {
 	);
 }
 
-function AudioPlayer({ url }) {
+function AudioPlayer({ url, title }) {
 	return (
-		<div className="rounded-lg border bg-card p-6">
-			<audio
-				src={url}
-				controls
-				className="w-full"
-			/>
-		</div>
+		<ProtectedAudioPlayer
+			src={url}
+			title={title}
+		/>
 	);
 }
 
@@ -316,20 +314,17 @@ function TextRenderer({ content, lessonTitle }) {
 	);
 }
 
-export function LessonPlayer({ lesson }) {
-	const [mounted, setMounted] = useState(false);
-	useEffect(() => setMounted(true), []);
-
-	// Évite les soucis d'hydratation pour les players client
-	if (!mounted && lesson.type !== "TEXT") {
-		return <div className="aspect-video w-full rounded-lg bg-muted animate-pulse" />;
-	}
-
+function LessonContentSwitch({ lesson }) {
 	switch (lesson.type) {
 		case "VIDEO":
 			return <VideoPlayer url={lesson.content} />;
 		case "AUDIO":
-			return <AudioPlayer url={lesson.content} />;
+			return (
+				<AudioPlayer
+					url={lesson.content}
+					title={lesson.title}
+				/>
+			);
 		case "TEXT":
 			return (
 				<TextRenderer
@@ -342,4 +337,27 @@ export function LessonPlayer({ lesson }) {
 		default:
 			return <p className="text-muted-foreground">Type de leçon non supporté</p>;
 	}
+}
+
+export function LessonPlayer({ lesson }) {
+	const [mounted, setMounted] = useState(false);
+	useEffect(() => setMounted(true), []);
+
+	if (!mounted && lesson.type !== "TEXT") {
+		return <div className="aspect-video w-full rounded-lg bg-muted animate-pulse" />;
+	}
+
+	return (
+		<div className="space-y-6">
+			{/* Capsule audio optionnelle, peu importe le type de leçon */}
+			{lesson.audioUrl && lesson.type !== "AUDIO" && (
+				<ProtectedAudioPlayer
+					src={lesson.audioUrl}
+					title={`Capsule audio — ${lesson.title}`}
+				/>
+			)}
+
+			<LessonContentSwitch lesson={lesson} />
+		</div>
+	);
 }
