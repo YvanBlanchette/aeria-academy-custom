@@ -129,11 +129,13 @@ function VideoPlayer({ url }) {
 	);
 }
 
-function AudioPlayer({ url, title }) {
+function AudioPlayer({ url, title, prevHref, nextHref }) {
 	return (
 		<ProtectedAudioPlayer
 			src={url}
 			title={title}
+			prevHref={prevHref}
+			nextHref={nextHref}
 		/>
 	);
 }
@@ -252,20 +254,20 @@ function TextRenderer({ content, lessonTitle }) {
 
 	return (
 		<div className="relative">
-			<div className="fixed right-4 top-26 z-40 flex w-fit justify-end">
+			<div className="fixed right-3 top-21 z-40 flex w-fit justify-end md:right-4 md:top-26">
 				<Sheet>
 					<SheetTrigger asChild>
 						<Button
 							variant="outline"
 							size="sm"
-							className="h-8 w-8 p-0 gap-0 rounded-full border-border shadow-lg cursor-pointer hover:-translate-x-1 transition-transform bg-white hover:bg-white border sm:h-7 sm:w-auto sm:px-2.5 sm:gap-2"
+							className="h-9 w-9 rounded-full border border-border bg-white p-0 shadow-lg transition-transform hover:-translate-x-1 hover:bg-white sm:h-8 sm:w-auto sm:gap-2 sm:px-2.5"
 						>
 							<List className="h-4 w-4" />
-							<span className="max-sm:hidden">Sommaire</span>
+							<span className="hidden sm:inline">Sommaire</span>
 						</Button>
 					</SheetTrigger>
 					<SheetContent
-						className="w-full gap-0 p-0 sm:max-w-md"
+						className="w-full gap-0 p-0 sm:max-w-sm md:max-w-md"
 						overlayClassName="bg-black/5 supports-backdrop-filter:backdrop-blur-none"
 						showCloseButton={false}
 					>
@@ -279,7 +281,7 @@ function TextRenderer({ content, lessonTitle }) {
 								<span className="sr-only">Fermer le sommaire</span>
 							</Button>
 						</SheetClose>
-						<div className="border-b h-[90px] flex items-center justify-center bg-white px-6">
+						<div className="flex h-18 items-center justify-center border-b bg-white px-6 md:h-22.5">
 							<Logo
 								locale="fr"
 								scrolled
@@ -301,7 +303,7 @@ function TextRenderer({ content, lessonTitle }) {
 
 			<div
 				ref={articleRef}
-				className="prose prose-slate max-w-none pr-0 pt-6 dark:prose-invert sm:pr-4"
+				className="prose prose-slate max-w-none wrap-break-word pr-0 pt-4 dark:prose-invert sm:pt-6 sm:pr-4"
 			>
 				<ReactMarkdown
 					remarkPlugins={[remarkGfm]}
@@ -314,7 +316,7 @@ function TextRenderer({ content, lessonTitle }) {
 	);
 }
 
-function LessonContentSwitch({ lesson }) {
+function LessonContentSwitch({ lesson, prevHref, nextHref }) {
 	switch (lesson.type) {
 		case "VIDEO":
 			return <VideoPlayer url={lesson.content} />;
@@ -323,6 +325,8 @@ function LessonContentSwitch({ lesson }) {
 				<AudioPlayer
 					url={lesson.content}
 					title={lesson.title}
+					prevHref={prevHref}
+					nextHref={nextHref}
 				/>
 			);
 		case "TEXT":
@@ -339,7 +343,7 @@ function LessonContentSwitch({ lesson }) {
 	}
 }
 
-export function LessonPlayer({ lesson }) {
+export function LessonPlayer({ lesson, prevHref, nextHref }) {
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
 
@@ -353,11 +357,17 @@ export function LessonPlayer({ lesson }) {
 			{lesson.audioUrl && lesson.type !== "AUDIO" && (
 				<ProtectedAudioPlayer
 					src={lesson.audioUrl}
-					title={`Capsule audio — ${lesson.title}`}
+					title={`${lesson.title}`}
+					prevHref={prevHref}
+					nextHref={nextHref}
 				/>
 			)}
 
-			<LessonContentSwitch lesson={lesson} />
+			<LessonContentSwitch
+				lesson={lesson}
+				prevHref={prevHref}
+				nextHref={nextHref}
+			/>
 		</div>
 	);
 }

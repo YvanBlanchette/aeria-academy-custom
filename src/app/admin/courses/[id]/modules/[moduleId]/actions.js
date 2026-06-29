@@ -43,8 +43,10 @@ export async function createLesson(courseId, moduleId, formData) {
 
 	await prisma.lesson.create({
 		data: {
-			...parsed.data,
-			audioUrl: audioUrl || null,
+			title: parsed.data.title,
+			type: parsed.data.type,
+			content: parsed.data.content,
+			audioUrl: parsed.data.audioUrl || null,
 			duration: parsed.data.duration || null,
 			order: (last?.order || 0) + 1,
 			moduleId,
@@ -61,13 +63,20 @@ export async function updateLesson(courseId, moduleId, lessonId, formData) {
 		title: formData.get("title"),
 		type: formData.get("type"),
 		content: formData.get("content"),
+		audioUrl: formData.get("audioUrl") || "",
 		duration: formData.get("duration") || 0,
 	});
 	if (!parsed.success) return { error: parsed.error.issues[0].message };
 
 	await prisma.lesson.update({
 		where: { id: lessonId },
-		data: { ...parsed.data, duration: parsed.data.duration || null },
+		data: {
+			title: parsed.data.title,
+			type: parsed.data.type,
+			content: parsed.data.content,
+			audioUrl: parsed.data.audioUrl || null,
+			duration: parsed.data.duration || null,
+		},
 	});
 
 	revalidatePath(`/admin/courses/${courseId}/modules/${moduleId}`);

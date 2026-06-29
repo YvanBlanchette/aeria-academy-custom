@@ -6,8 +6,9 @@ export function UserWatermark({ user }) {
 
 	return (
 		<div
-			className="pointer-events-none fixed inset-0 z-50 overflow-hidden"
+			className="pointer-events-none fixed inset-0 z-50 hidden overflow-hidden print:block"
 			style={{ opacity: 0.04 }}
+			aria-hidden="true"
 		>
 			<div
 				className="absolute inset-0"

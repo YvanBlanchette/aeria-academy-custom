@@ -14,7 +14,19 @@ const FILE_CONFIGS = {
 		subdir: "pdfs",
 	},
 	AUDIO: {
-		allowedMimes: ["audio/mpeg", "audio/mp4", "audio/wav", "audio/ogg", "audio/webm", "video/webm", "video/ogg", "application/octet-stream"],
+		allowedMimes: [
+			"audio/mpeg",
+			"audio/mp4",
+			"audio/x-m4a",
+			"audio/wav",
+			"audio/ogg",
+			"audio/webm",
+			"audio/opus",
+			"video/webm",
+			"video/ogg",
+			"application/octet-stream",
+		],
+		allowedExtensions: ["mp3", "m4a", "wav", "ogg", "webm", "opus"],
 		maxSize: 100 * 1024 * 1024, // 100 MB
 		subdir: "audio",
 	},

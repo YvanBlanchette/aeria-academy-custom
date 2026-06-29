@@ -42,7 +42,7 @@ export function MarkCompleteButton({ courseId, lessonId, isCompleted, nextLesson
 			variant={completed ? "secondary" : "default"}
 			onClick={handleClick}
 			disabled={loading}
-			className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
+			className="max-w-full whitespace-normal text-xs shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200 sm:text-sm"
 		>
 			{loading ? (
 				<Loader2 className="mr-1 h-4 w-4 animate-spin" />
@@ -51,7 +51,22 @@ export function MarkCompleteButton({ courseId, lessonId, isCompleted, nextLesson
 			) : (
 				<CheckCircle2 className="mr-1 h-4 w-4" />
 			)}
-			{completed ? "Annuler la completion" : nextLessonId ? "Terminer et continuer" : "Terminer la leçon"}
+			{completed ? (
+				<>
+					<span className="sm:hidden">Annuler</span>
+					<span className="hidden sm:inline">Annuler la complétion</span>
+				</>
+			) : nextLessonId ? (
+				<>
+					<span className="sm:hidden">Terminer</span>
+					<span className="hidden sm:inline">Terminer et continuer</span>
+				</>
+			) : (
+				<>
+					<span className="sm:hidden">Terminer</span>
+					<span className="hidden sm:inline">Terminer la leçon</span>
+				</>
+			)}
 		</Button>
 	);
 }

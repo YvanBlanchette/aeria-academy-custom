@@ -27,7 +27,7 @@ const TYPE_CONFIG = {
 		accept: null,
 		label: "vidéo",
 		hint: null,
-		allowUpload: false, // 👈 Vidéo = URL uniquement (YouTube/Vimeo)
+		allowUpload: false,
 	},
 };
 

@@ -18,7 +18,7 @@ export const authConfig = {
 			if (user) {
 				token.role = user.role;
 				token.id = user.id;
-				token.membership = user.membership; // 👈 ajout
+				token.membership = user.membership;
 			}
 			return token;
 		},
@@ -26,7 +26,7 @@ export const authConfig = {
 			if (session.user) {
 				session.user.id = token.id;
 				session.user.role = token.role;
-				session.user.membership = token.membership; // 👈 ajout
+				session.user.membership = token.membership;
 			}
 			return session;
 		},

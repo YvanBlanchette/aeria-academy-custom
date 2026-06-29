@@ -16,13 +16,13 @@ function FloatingLessonsTrigger() {
 	}
 
 	return (
-		<div className="fixed left-4 top-26 z-30 flex w-fit justify-start ">
+		<div className="fixed left-3 z-30 flex w-fit justify-start md:left-4 md:top-26">
 			<SidebarTrigger
 				variant="outline"
 				size="sm"
-				className="h-8 w-8 p-0 gap-0 rounded-full border-border shadow-lg cursor-pointer hover:translate-x-1 transition-transform bg-white hover:bg-white border sm:h-7 sm:w-auto sm:px-2.5 sm:gap-2"
+				className="h-9 w-9 rounded-full border border-border bg-white p-0 shadow-lg transition-transform hover:translate-x-1 hover:bg-white sm:h-8 sm:w-auto sm:gap-2 sm:px-2.5"
 			>
-				<span className="max-sm:hidden">Leçons</span>
+				<span className="hidden sm:inline">Leçons</span>
 			</SidebarTrigger>
 		</div>
 	);
@@ -38,6 +38,7 @@ export function LearnShell({ course, completedSet, defaultOpen, children, sessio
 				"--sidebar-width": "384px",
 				"--sidebar-width-mobile": "384px",
 				"--background": "#f5f5f5",
+				"--learn-header-height": "5.5rem",
 			}}
 		>
 			<Sidebar
@@ -45,7 +46,7 @@ export function LearnShell({ course, completedSet, defaultOpen, children, sessio
 				desktopOverlay
 				className="border-r shadow-lg"
 			>
-				<SidebarHeader className="relative border-b h-[90px] flex items-center justify-center bg-white">
+				<SidebarHeader className="relative flex h-18 items-center justify-center border-b bg-white md:h-22.5">
 					<SidebarTrigger
 						variant="ghost"
 						size="icon-sm"
@@ -80,21 +81,21 @@ export function LearnShell({ course, completedSet, defaultOpen, children, sessio
 			<SidebarInset>
 				<FloatingLessonsTrigger />
 
-				<header className="sticky top-0 z-10 flex h-[90px] justify-between items-center border-b bg-white shadow-lg">
-					<div className="w-[90%] lg:w-full mx-auto max-w-7xl flex items-center justify-between">
-						<div className="flex items-center gap-4">
+				<header className="sticky top-0 z-10 border-b bg-white shadow-lg">
+					<div className="mx-auto flex min-h-18 w-[92%] max-w-7xl items-center justify-between gap-3 py-2 sm:w-[90%] md:min-h-22.5 md:gap-4">
+						<div className="min-w-0 flex-1">
 							<div>
-								<h1 className="text-3xl font-bold">{course.title}</h1>
-								<div className="flex items-center gap-2">
-									<p className="text-muted-foreground">{course.description}</p>
+								<h1 className="line-clamp-2 text-base font-bold leading-tight sm:text-xl lg:text-3xl">{course.title}</h1>
+								<div className="mt-0.5 flex items-center gap-2">
+									<p className="line-clamp-1 hidden text-sm text-muted-foreground md:block">{course.description}</p>
 								</div>
 							</div>
 						</div>
 						{user && (
-							<div className="flex items-center gap-4">
-								<div>
-									<h2 className="text-base font-bold">{user?.name}</h2>
-									<p className="text-xs text-muted-foreground">{user?.email}</p>
+							<div className="flex shrink-0 items-center gap-2 sm:gap-3">
+								<div className="hidden text-right sm:block">
+									<h2 className="max-w-48 truncate text-sm font-bold md:text-base">{user?.name}</h2>
+									<p className="max-w-52 truncate text-xs text-muted-foreground">{user?.email}</p>
 								</div>
 								<UserButtonClient
 									user={user}

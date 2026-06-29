@@ -52,10 +52,10 @@ export default async function LessonPage({ params }) {
 
 	// JSX code for the lesson page
 	return (
-		<div className="container w-[90%] lg:w-full max-w-7xl mx-auto space-y-6 py-6">
-			<Card className="w-full px-12 py-10 rounded bg-white shadow-md">
+		<div className="container mx-auto w-[92%] max-w-7xl space-y-5 py-4 sm:w-[90%] sm:space-y-6 sm:py-6 lg:w-full">
+			<Card className="w-full rounded bg-white px-4 py-5 shadow-md sm:px-6 sm:py-7 lg:px-12 lg:py-10">
 				<div>
-					<h1 className="mt-1 text-3xl font-bold">{lesson.title}</h1>
+					<h1 className="mt-1 text-xl font-bold leading-tight sm:text-2xl lg:text-3xl">{lesson.title}</h1>
 					{isCompleted && (
 						<div className="mt-2 flex items-center gap-2 text-sm text-green-600">
 							<CheckCircle2 className="h-4 w-4" />
@@ -64,15 +64,19 @@ export default async function LessonPage({ params }) {
 					)}
 				</div>
 
-				<LessonPlayer lesson={lesson} />
+				<LessonPlayer
+					lesson={lesson}
+					prevHref={prev ? `/learn/${courseId}/${prev.id}` : null}
+					nextHref={next ? `/learn/${courseId}/${next.id}` : null}
+				/>
 			</Card>
 
-			<div className="flex items-center justify-between border-t pt-6">
+			<div className="flex flex-wrap items-center justify-between gap-2 border-t pt-4 sm:gap-3 sm:pt-6">
 				<Button
 					asChild
 					variant="outline"
 					disabled={!prev}
-					className="h-8 w-8 p-0 gap-0 rounded-full border-border shadow-lg cursor-pointer hover:-translate-x-1 transition-transform bg-white hover:bg-white border sm:h-7 sm:w-auto sm:px-2.5 sm:gap-2"
+					className="h-9 w-9 rounded-full border border-border bg-white p-0 shadow-lg transition-transform hover:-translate-x-1 hover:bg-white sm:h-8 sm:w-auto sm:gap-2 sm:px-2.5"
 				>
 					{prev ? (
 						<Link href={`/learn/${courseId}/${prev.id}`}>
@@ -98,7 +102,7 @@ export default async function LessonPage({ params }) {
 					asChild
 					variant="outline"
 					disabled={!next}
-					className="h-8 w-8 p-0 gap-0 rounded-full border-border shadow-lg cursor-pointer hover:translate-x-1 transition-transform bg-white hover:bg-white border sm:h-7 sm:w-auto sm:px-2.5 sm:gap-2"
+					className="h-9 w-9 rounded-full border border-border bg-white p-0 shadow-lg transition-transform hover:translate-x-1 hover:bg-white sm:h-8 sm:w-auto sm:gap-2 sm:px-2.5"
 				>
 					{next ? (
 						<Link href={`/learn/${courseId}/${next.id}`}>
