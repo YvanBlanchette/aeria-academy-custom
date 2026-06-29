@@ -91,7 +91,7 @@ export default async function AdminArticlesPage({ searchParams }) {
 					Aucun article {filter === "draft" ? "en brouillon" : filter === "published" ? "publié" : ""}
 				</Card>
 			) : (
-				<div className="rounded-lg border bg-card">
+				<div className="rounded-lg border bg-card overflow-hidden">
 					<Table>
 						<TableHeader className="bg-[#171717]  hover:bg-[#171717] text-white hover:pointer-events-none">
 							<TableRow>

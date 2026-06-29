@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Lock, FileText, Crown } from "lucide-react";
@@ -52,10 +51,7 @@ export default async function ResourcesPage({ searchParams }) {
 	const selectedTag = selectedTagSlug ? allTags.find((t) => t.slug === selectedTagSlug) : null;
 
 	return (
-		<DashboardLayoutRight
-			title="Ressources"
-			subtitle={selectedTag ? `${articles.length} article(s) sur "${selectedTag.name}"` : `${articles.length} article(s) disponible(s)`}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			{/* Filtres par tag */}
 			{allTags.length > 0 && (
 				<div className="flex flex-wrap gap-2 mb-8">
@@ -106,12 +102,12 @@ export default async function ResourcesPage({ searchParams }) {
 							>
 								<Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
 									{article.coverImage ? (
-										<div className="relative aspect-video w-full overflow-hidden bg-muted">
+										<div className="relative aspect-video w-full overflow-hidden bg-muted -translate-y-4">
 											{/* eslint-disable-next-line @next/next/no-img-element */}
 											<img
 												src={article.coverImage}
 												alt={article.title}
-												className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+												className="h-full w-full object-cover"
 											/>
 											{!access.allowed && (
 												<div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -192,6 +188,6 @@ export default async function ResourcesPage({ searchParams }) {
 					})}
 				</div>
 			)}
-		</DashboardLayoutRight>
+		</div>
 	);
 }

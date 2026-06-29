@@ -59,10 +59,7 @@ export default async function ArticleDetailPage({ params }) {
 		const info = articleAccessBlockedInfo(access.reason, article);
 
 		return (
-			<DashboardLayoutRight
-				title={article.title}
-				subtitle="Contenu verrouillé"
-			>
+			<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 				<div className="mb-4">
 					<Link
 						href="/resources"
@@ -82,7 +79,7 @@ export default async function ArticleDetailPage({ params }) {
 								alt={article.title}
 								className="h-full w-full object-cover"
 							/>
-							<div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+							<div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
 						</div>
 					)}
 
@@ -108,7 +105,7 @@ export default async function ArticleDetailPage({ params }) {
 						</CardContent>
 					</Card>
 				</div>
-			</DashboardLayoutRight>
+			</div>
 		);
 	}
 
@@ -123,10 +120,7 @@ export default async function ArticleDetailPage({ params }) {
 	const tierBadge = tierBadges[article.requiredTier];
 
 	return (
-		<DashboardLayoutRight
-			title={article.title}
-			subtitle={article.excerpt || "Article AERIA"}
-		>
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
 			<div className="mb-4">
 				<Link
 					href="/resources"
@@ -137,7 +131,7 @@ export default async function ArticleDetailPage({ params }) {
 				</Link>
 			</div>
 
-			<article className="max-w-3xl mx-auto">
+			<article className="max-w-7xl mx-auto">
 				{/* Image de couverture */}
 				{article.coverImage && (
 					<div className="aspect-video w-full overflow-hidden rounded-lg bg-muted mb-8">
@@ -246,6 +240,6 @@ export default async function ArticleDetailPage({ params }) {
 					</Link>
 				</div>
 			</article>
-		</DashboardLayoutRight>
+		</div>
 	);
 }
