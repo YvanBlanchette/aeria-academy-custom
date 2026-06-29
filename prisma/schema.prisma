@@ -162,9 +162,10 @@ model Lesson {
   id        String     @id @default(cuid())
   title     String
   type      LessonType
-  content   String     // URL média ou texte
+  content   String
   audioUrl  String?
-  duration  Int?       // en secondes
+  audioUrlExpress  String?
+  duration  Int?
   order     Int
   moduleId  String
   module    Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
