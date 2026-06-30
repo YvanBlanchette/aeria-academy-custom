@@ -51,7 +51,9 @@ model User {
   progress      LessonProgress[]
   quizAttempts  QuizAttempt[]
   certificates  Certificate[]
-  articles      Article[] 
+  articles      Article[]
+  settingsAuditLogs AdminSettingsAuditLog[]
+  dashboardSettings UserDashboardSettings?
 }
 
 model UserProfile {
@@ -349,4 +351,41 @@ model ArticleTag {
   
   @@id([articleId, tagId])
   @@index([tagId])
+}
+
+model UserDashboardSettings {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  locale          String   @default("fr")
+  timezone        String   @default("America/Toronto")
+  reminderHour    String   @default("09:00")
+  weeklyDigest    Boolean  @default(true)
+  courseReminders Boolean  @default(true)
+  productUpdates  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PlatformSettings {
+  id          String   @id
+  data        Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AdminSettingsAuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String
+  changes     Json
+  createdAt   DateTime @default(now())
+
+  actor       User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorUserId])
 }

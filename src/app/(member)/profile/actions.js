@@ -1,5 +1,9 @@
 "use server";
 
+import { existsSync } from "fs";
+import { mkdir, writeFile } from "fs/promises";
+import path from "path";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
@@ -136,6 +140,14 @@ export async function suggestUsername(name) {
 }
 
 const profileSchema = z.object({
+	name: z.string().min(2, "Nom trop court").max(120, "Nom trop long"),
+	image: z
+		.string()
+		.refine((val) => val === "" || val.startsWith("/uploads/") || /^https?:\/\//.test(val), {
+			message: "URL d'image invalide",
+		})
+		.optional(),
+
 	// Coordonnées
 	phone: z.string().max(30).optional().nullable(),
 	address: z.string().max(200).optional().nullable(),
@@ -169,6 +181,8 @@ export async function updateProfile(formData) {
 
 	// Convertit le FormData en objet
 	const raw = {
+		name: String(formData.get("name") || "").trim(),
+		image: String(formData.get("image") || "").trim(),
 		phone: formData.get("phone") || null,
 		address: formData.get("address") || null,
 		city: formData.get("city") || null,
@@ -204,6 +218,14 @@ export async function updateProfile(formData) {
 	if (d.tiktokUrl) socialLinks.tiktok = d.tiktokUrl;
 	if (d.twitterUrl) socialLinks.twitter = d.twitterUrl;
 	if (d.youtubeUrl) socialLinks.youtube = d.youtubeUrl;
+
+	await prisma.user.update({
+		where: { id: session.user.id },
+		data: {
+			name: d.name,
+			image: d.image || null,
+		},
+	});
 
 	await prisma.userProfile.upsert({
 		where: { userId: session.user.id },
@@ -243,6 +265,45 @@ export async function updateProfile(formData) {
 	revalidatePath("/profile");
 	revalidatePath("/dashboard");
 	return { success: true };
+}
+
+const PROFILE_IMAGE_CONFIG = {
+	allowedMimes: ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"],
+	maxSize: 5 * 1024 * 1024, // 5 MB
+};
+
+export async function uploadProfileImage(formData) {
+	const session = await auth();
+	if (!session) return { error: "Non autorisé" };
+
+	const file = formData.get("file");
+	if (!file || typeof file === "string") {
+		return { error: "Aucun fichier reçu" };
+	}
+
+	if (!PROFILE_IMAGE_CONFIG.allowedMimes.includes(file.type)) {
+		return { error: `Format invalide. Reçu : ${file.type}` };
+	}
+
+	if (file.size > PROFILE_IMAGE_CONFIG.maxSize) {
+		return { error: "Image trop volumineuse (5 MB max)" };
+	}
+
+	const ext = (path.extname(file.name) || "").toLowerCase();
+	const uploadDir = path.join(process.cwd(), "public", "uploads", "users", "avatars");
+	if (!existsSync(uploadDir)) {
+		await mkdir(uploadDir, { recursive: true });
+	}
+
+	const filename = `${session.user.id}-${randomUUID()}${ext}`;
+	const filePath = path.join(uploadDir, filename);
+
+	const bytes = await file.arrayBuffer();
+	await writeFile(filePath, Buffer.from(bytes));
+
+	return {
+		url: `/uploads/users/avatars/${filename}`,
+	};
 }
 
 export async function updateAccount(formData) {

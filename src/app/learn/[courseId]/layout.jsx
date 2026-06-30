@@ -11,6 +11,18 @@ export default async function LearnLayout({ children, params }) {
 	const session = await auth();
 	if (!session) redirect(`/login?callbackUrl=/learn/${courseId}`);
 
+	const freshUser = await prisma.user.findUnique({
+		where: { id: session.user.id },
+		select: {
+			id: true,
+			name: true,
+			email: true,
+			image: true,
+			role: true,
+			membership: true,
+		},
+	});
+
 	const course = await prisma.course.findUnique({
 		where: { id: courseId },
 		include: {
@@ -64,9 +76,9 @@ export default async function LearnLayout({ children, params }) {
 			course={course}
 			completedSet={completedSet}
 			defaultOpen={sidebarOpen}
-			session={session}
+			session={{ ...session, user: freshUser || session.user }}
 		>
-			<UserWatermark user={session.user} />
+			<UserWatermark user={freshUser || session.user} />
 			{children}
 		</LearnShell>
 	);

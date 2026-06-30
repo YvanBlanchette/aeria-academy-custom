@@ -34,17 +34,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				token.id = user.id;
 				token.role = user.role;
 				token.membership = user.membership;
+				token.name = user.name;
+				token.picture = user.image;
 			}
 
 			// Refresh demandé explicitement (après paiement Stripe)
 			if (trigger === "update" || (token.id && token.membership === undefined)) {
 				const dbUser = await prisma.user.findUnique({
 					where: { id: token.id },
-					select: { role: true, membership: true },
+					select: { role: true, membership: true, name: true, image: true },
 				});
 				if (dbUser) {
 					token.role = dbUser.role;
 					token.membership = dbUser.membership;
+					token.name = dbUser.name;
+					token.picture = dbUser.image;
 				}
 			}
 
@@ -55,6 +59,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				session.user.id = token.id;
 				session.user.role = token.role;
 				session.user.membership = token.membership;
+				session.user.name = token.name ?? session.user.name;
+				session.user.image = token.picture ?? session.user.image;
 			}
 			return session;
 		},

@@ -1,24 +1,63 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2, Trash2, Upload } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { updateProfile } from "@/app/(member)/profile/actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { updateProfile, uploadProfileImage } from "@/app/(member)/profile/actions";
 import { UsernameSection } from "./username-section";
 
 export function ProfileForm({ profile, user }) {
 	const router = useRouter();
+	const { update: updateSession } = useSession();
+	const fileInputRef = useRef(null);
 	const [loading, setLoading] = useState(false);
+	const [uploadingImage, setUploadingImage] = useState(false);
 	const [publicProfile, setPublicProfile] = useState(profile?.publicProfile || false);
+	const [image, setImage] = useState(user?.image || "");
 
 	// Extrait les social links depuis le JSON
 	const sl = profile?.socialLinks || {};
+	const initials = (user?.name || user?.email || "?")
+		.split(" ")
+		.map((s) => s.charAt(0))
+		.join("")
+		.toUpperCase()
+		.slice(0, 2);
+
+	async function handleImageChange(e) {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		const formData = new FormData();
+		formData.set("file", file);
+
+		setUploadingImage(true);
+		const result = await uploadProfileImage(formData);
+		setUploadingImage(false);
+
+		if (result?.error) {
+			toast.error(result.error);
+			return;
+		}
+
+		setImage(result.url);
+		toast.success("Photo de profil mise à jour");
+	}
+
+	function clearImage() {
+		setImage("");
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
+	}
 
 	async function handleSubmit(e) {
 		e.preventDefault();
@@ -26,6 +65,7 @@ export function ProfileForm({ profile, user }) {
 
 		const formData = new FormData(e.currentTarget);
 		formData.set("publicProfile", publicProfile.toString());
+		formData.set("image", image);
 
 		const result = await updateProfile(formData);
 		setLoading(false);
@@ -35,6 +75,7 @@ export function ProfileForm({ profile, user }) {
 			return;
 		}
 
+		await updateSession();
 		toast.success("Profil mis à jour");
 		router.refresh();
 	}
@@ -44,6 +85,72 @@ export function ProfileForm({ profile, user }) {
 			onSubmit={handleSubmit}
 			className="space-y-6"
 		>
+			<Card>
+				<CardHeader>
+					<CardTitle>Compte</CardTitle>
+					<CardDescription>Modifie ton nom et ta photo de profil</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+						<Avatar
+							size="lg"
+							className="h-20 w-20"
+						>
+							<AvatarImage
+								src={image || undefined}
+								alt={user?.name || "Photo de profil"}
+							/>
+							<AvatarFallback>{initials}</AvatarFallback>
+						</Avatar>
+
+						<div className="flex flex-wrap items-center gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => fileInputRef.current?.click()}
+								disabled={uploadingImage}
+							>
+								{uploadingImage ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+								{uploadingImage ? "Upload..." : "Changer la photo"}
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								onClick={clearImage}
+								disabled={!image || uploadingImage}
+							>
+								<Trash2 className="mr-2 h-4 w-4" />
+								Supprimer
+							</Button>
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+								onChange={handleImageChange}
+								className="hidden"
+							/>
+						</div>
+					</div>
+
+					<input
+						type="hidden"
+						name="image"
+						value={image}
+					/>
+
+					<div className="space-y-2">
+						<Label htmlFor="name">Nom complet</Label>
+						<Input
+							id="name"
+							name="name"
+							defaultValue={user?.name || ""}
+							placeholder="Ton nom"
+							required
+						/>
+					</div>
+				</CardContent>
+			</Card>
+
 			{/* Profil professionnel */}
 			<Card>
 				<CardHeader>
