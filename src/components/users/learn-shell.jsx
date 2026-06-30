@@ -16,7 +16,7 @@ function FloatingLessonsTrigger() {
 	}
 
 	return (
-		<div className="fixed left-3 z-30 flex w-fit justify-start md:left-4 md:top-26">
+		<div className="fixed left-3 top-21 z-30 flex w-fit justify-start md:left-4 md:top-26">
 			<SidebarTrigger
 				variant="outline"
 				size="sm"

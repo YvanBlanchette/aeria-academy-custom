@@ -116,17 +116,15 @@ export default async function AdminArticlesPage({ searchParams }) {
 										<p className="text-xs text-muted-foreground">/{a.slug}</p>
 									</TableCell>
 									<TableCell className="text-center border">
-										<div className="flex flex-wrap gap-1">
-											{a.tags.map(({ tag }) => (
-												<Badge
-													key={tag.id}
-													variant="outline"
-													style={tag.color ? { backgroundColor: tag.color, color: "#fff", borderColor: tag.color } : undefined}
-												>
-													{tag.name}
-												</Badge>
-											))}
-										</div>
+										{a.tags.map(({ tag }) => (
+											<Badge
+												key={tag.id}
+												variant="outline"
+												style={tag.color ? { backgroundColor: tag.color, color: "#fff", borderColor: tag.color } : undefined}
+											>
+												{tag.name}
+											</Badge>
+										))}
 									</TableCell>
 									<TableCell className="text-center border">
 										<Badge variant={tierColors[a.requiredTier]}>{a.requiredTier}</Badge>
@@ -134,8 +132,8 @@ export default async function AdminArticlesPage({ searchParams }) {
 									<TableCell className="text-center border">
 										<Badge variant={a.published ? "default" : "secondary"}>{a.published ? "Publié" : "Brouillon"}</Badge>
 									</TableCell>
-									<TableCell className="text-sm">{a.author.name}</TableCell>
-									<TableCell className="text-sm text-muted-foreground">{new Date(a.updatedAt).toLocaleDateString("fr-FR")}</TableCell>
+									<TableCell className="text-center text-sm">{a.author.name}</TableCell>
+									<TableCell className="text-center text-sm text-muted-foreground">{new Date(a.updatedAt).toLocaleDateString("fr-FR")}</TableCell>
 								</TableRow>
 							))}
 						</TableBody>

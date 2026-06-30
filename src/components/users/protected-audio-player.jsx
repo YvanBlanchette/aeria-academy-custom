@@ -24,6 +24,7 @@ function normalizeAudioSrc(value) {
 
 export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio", prevHref = null, nextHref = null }) {
 	const audioRef = useRef(null);
+	const autoPlayOnReadyRef = useRef(false);
 
 	// State pour la version active
 	const [isExpress, setIsExpress] = useState(false);
@@ -32,7 +33,6 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 	const activeSrc = isExpress && srcExpress ? srcExpress : src;
 	const normalizedSrc = normalizeAudioSrc(activeSrc);
 
-	const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
 	const [playing, setPlaying] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [currentTime, setCurrentTime] = useState(0);
@@ -63,9 +63,9 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 		const onCanPlay = () => {
 			markReady();
 			// Si on doit auto-play (après un toggle), lance la lecture
-			if (shouldAutoPlay) {
+			if (autoPlayOnReadyRef.current) {
 				audio.play().catch(() => {});
-				setShouldAutoPlay(false);
+				autoPlayOnReadyRef.current = false;
 			}
 		};
 		const onDurationChange = () => {
@@ -96,9 +96,9 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 
 		if (audio.readyState >= 1) {
 			markReady();
-			if (shouldAutoPlay) {
+			if (autoPlayOnReadyRef.current) {
 				audio.play().catch(() => {});
-				setShouldAutoPlay(false);
+				autoPlayOnReadyRef.current = false;
 			}
 		} else {
 			audio.load();
@@ -116,7 +116,7 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 			audio.removeEventListener("waiting", onWaiting);
 			audio.removeEventListener("error", onError);
 		};
-	}, [normalizedSrc, shouldAutoPlay]);
+	}, [normalizedSrc]);
 
 	async function togglePlay() {
 		const audio = audioRef.current;
@@ -175,7 +175,7 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 		if (toExpress && !srcExpress) return;
 
 		// Si on est en lecture, on veut continuer après le switch
-		setShouldAutoPlay(playing);
+		autoPlayOnReadyRef.current = playing;
 		setIsExpress(toExpress);
 	}
 
@@ -222,88 +222,90 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 			/>
 
 			{/* AUDIO HEADER */}
-			<div className="p-4 flex flex-col justify-between items-center gap-3 sm:flex-row sm:items-start bg-neutral-300 h-full -translate-y-4 rounded-t-lg">
+			<div className="-translate-y-4 rounded-t-lg bg-neutral-300 p-3 sm:p-4">
 				{/* AUDIO INFO */}
-				<div className="flex items-center gap-3">
-					<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
-						<Music className="h-5 w-5 text-primary" />
-					</div>
-					<div className="flex-1 min-w-0">
-						<p className="text-xs uppercase tracking-wider text-neutral-700">Capsule audio</p>
-						<p className="text-base font-medium truncate">{title}</p>
-					</div>
-				</div>
-
-				<div className="flex gap-4 justify-end">
-					{/* VOLUME CONTROLS */}
-					<div className="flex items-center gap-1 self-end sm:self-auto">
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon"
-							onClick={toggleMute}
-							className="h-8 w-8 cursor-pointer"
-						>
-							{muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-						</Button>
-						<div className="w-24 sm:w-20">
-							<Slider
-								value={[muted ? 0 : volume]}
-								max={1}
-								step={0.05}
-								onValueChange={handleVolumeChange}
-								className="cursor-pointer"
-							/>
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="min-w-0 flex items-center gap-3">
+						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-10 sm:w-10">
+							<Music className="h-5 w-5 text-primary" />
+						</div>
+						<div className="min-w-0 flex-1">
+							<p className="text-xs uppercase tracking-wider text-neutral-700">Capsule audio</p>
+							<p className="truncate text-sm font-medium sm:text-base">{title}</p>
 						</div>
 					</div>
 
-					{srcExpress && (
-						<div className="relative flex items-center rounded-full border border-neutral-400/50 bg-white/40 p-1 backdrop-blur-sm min-w-[150px]">
-							{/* Pill animé qui glisse */}
-							<motion.div
-								layout
-								className="absolute top-1 bottom-1 bg-neutral-900 rounded-full"
-								style={{
-									width: `calc(50% - 0.25rem)`,
-									left: `calc(${(isExpress ? 1 : 0) * 50}% + 0.125rem)`,
-								}}
-								transition={{ type: "spring", stiffness: 380, damping: 30 }}
-							/>
-
-							<button
+					<div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+						{/* VOLUME CONTROLS */}
+						<div className="flex items-center gap-1">
+							<Button
 								type="button"
-								className={clsx(
-									"relative z-10 cursor-pointer rounded-full px-3 py-1 flex-1 text-xs font-medium transition-colors",
-									!isExpress ? "text-white" : "text-neutral-700 hover:text-neutral-900",
-								)}
-								onClick={() => toggleVersion(false)}
+								variant="ghost"
+								size="icon"
+								onClick={toggleMute}
+								className="h-8 w-8 cursor-pointer"
 							>
-								Régulier
-							</button>
-							<button
-								type="button"
-								className={clsx(
-									"relative z-10 cursor-pointer rounded-full px-3 py-1 flex-1 text-xs font-medium transition-colors",
-									isExpress ? "text-white" : "text-neutral-700 hover:text-neutral-900",
-								)}
-								onClick={() => toggleVersion(true)}
-							>
-								Express
-							</button>
+								{muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+							</Button>
+							<div className="w-24 sm:w-20">
+								<Slider
+									value={[muted ? 0 : volume]}
+									max={1}
+									step={0.05}
+									onValueChange={handleVolumeChange}
+									className="cursor-pointer"
+								/>
+							</div>
 						</div>
-					)}
+
+						{srcExpress && (
+							<div className="relative flex w-full min-w-0 items-center rounded-full border border-neutral-400/50 bg-white/40 p-1 backdrop-blur-sm sm:w-auto sm:min-w-37.5">
+								{/* Pill animé qui glisse */}
+								<motion.div
+									layout
+									className="absolute top-1 bottom-1 bg-neutral-900 rounded-full"
+									style={{
+										width: `calc(50% - 0.25rem)`,
+										left: `calc(${(isExpress ? 1 : 0) * 50}% + 0.125rem)`,
+									}}
+									transition={{ type: "spring", stiffness: 380, damping: 30 }}
+								/>
+
+								<button
+									type="button"
+									className={clsx(
+										"relative z-10 flex-1 cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium transition-colors sm:px-3",
+										!isExpress ? "text-white" : "text-neutral-700 hover:text-neutral-900",
+									)}
+									onClick={() => toggleVersion(false)}
+								>
+									Régulier
+								</button>
+								<button
+									type="button"
+									className={clsx(
+										"relative z-10 flex-1 cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium transition-colors sm:px-3",
+										isExpress ? "text-white" : "text-neutral-700 hover:text-neutral-900",
+									)}
+									onClick={() => toggleVersion(true)}
+								>
+									Express
+								</button>
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
 
-			<div className="px-4 flex -mt-4 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-2">
+			<div className="-mt-4 flex flex-col gap-3 px-3 pb-3 sm:px-4 sm:pb-4 md:flex-row md:items-center md:justify-between md:gap-2">
 				{/* CONTROL BUTTONS */}
-				<div className="flex justify-start items-center gap-1.5">
+				<div className="flex items-center justify-start gap-1.5">
 					<Button
 						asChild
 						variant="outline"
 						size="icon"
 						disabled={!prevHref}
-						className="h-8 w-8 rounded-full bg-white shadow-sm hover:shadow-none active:shadow-inner active:bg-neutral-200"
+						className="h-9 w-9 rounded-full bg-white shadow-sm hover:shadow-none active:bg-neutral-200 active:shadow-inner"
 					>
 						{prevHref ? (
 							<Link
@@ -324,7 +326,7 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 						size="icon"
 						onClick={togglePlay}
 						disabled={Boolean(error)}
-						className="h-10 w-10 rounded-full"
+						className="h-11 w-11 rounded-full"
 					>
 						{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
 					</Button>
@@ -334,7 +336,7 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 						variant="outline"
 						size="icon"
 						disabled={!nextHref}
-						className="h-8 w-8 rounded-full bg-white shadow-sm hover:shadow-none active:shadow-inner active:bg-neutral-200"
+						className="h-9 w-9 rounded-full bg-white shadow-sm hover:shadow-none active:bg-neutral-200 active:shadow-inner"
 					>
 						{nextHref ? (
 							<Link
@@ -366,8 +368,8 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 				</div>
 
 				{/* VITESSE DE LECTURE — pill qui glisse */}
-				<div className="w-full md:w-auto flex justify-end">
-					<div className="relative flex items-center bg-neutral-300 rounded-full shadow-inner p-1 min-w-[180px]">
+				<div className="flex w-full justify-start md:w-auto md:justify-end">
+					<div className="relative flex w-full max-w-full items-center rounded-full bg-neutral-300 p-1 shadow-inner sm:w-auto sm:min-w-45">
 						{/* Pill animé */}
 						<motion.div
 							layout
@@ -386,7 +388,7 @@ export function ProtectedAudioPlayer({ src, srcExpress, title = "Capsule audio",
 								type="button"
 								onClick={() => changeSpeed(rate)}
 								className={clsx(
-									"relative z-10 flex-1 text-xs px-3 py-1 rounded-full transition-colors cursor-pointer",
+									"relative z-10 flex-1 cursor-pointer rounded-full px-2.5 py-1 text-xs transition-colors sm:px-3",
 									rate === playbackRate ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
 								)}
 							>
