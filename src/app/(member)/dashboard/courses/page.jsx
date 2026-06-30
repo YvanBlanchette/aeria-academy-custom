@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CourseCard } from "@/components/users/course-card";
+import { markdownToExcerpt } from "@/lib/markdown-excerpt";
 
 export const metadata = { title: "Mes cours | ÆRIA Voyages Academy" };
 
@@ -43,7 +44,7 @@ export default async function MyCoursesPage() {
 							showDefaultFooter={false}
 							contentClassName="p-6 space-y-3"
 						>
-							<p className="text-sm text-muted-foreground line-clamp-2">{enr.course.description}</p>
+							<p className="text-sm text-muted-foreground line-clamp-2">{markdownToExcerpt(enr.course.description, 140)}</p>
 							<span className="inline-flex items-center text-sm font-medium text-primary">Continuer →</span>
 						</CourseCard>
 					))}

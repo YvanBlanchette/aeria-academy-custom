@@ -6,15 +6,6 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-export const DEFAULT_DASHBOARD_PREFERENCES = {
-	locale: "fr",
-	timezone: "America/Toronto",
-	reminderHour: "09:00",
-	weeklyDigest: true,
-	courseReminders: true,
-	productUpdates: false,
-};
-
 const RESERVED_USERNAMES = new Set([
 	"admin",
 	"api",

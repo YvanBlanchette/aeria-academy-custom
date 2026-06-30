@@ -109,6 +109,21 @@ export async function togglePublish(courseId) {
 	const course = await prisma.course.findUnique({ where: { id: courseId } });
 	if (!course) return { error: "Cours introuvable" };
 
+	if (!course.published) {
+		const [modulesCount, lessonsCount] = await Promise.all([
+			prisma.module.count({ where: { courseId } }),
+			prisma.lesson.count({ where: { module: { courseId } } }),
+		]);
+
+		if (modulesCount === 0) {
+			return { error: "Ajoute au moins un module avant de publier ce cours" };
+		}
+
+		if (lessonsCount === 0) {
+			return { error: "Ajoute au moins une leçon avant de publier ce cours" };
+		}
+	}
+
 	await prisma.course.update({
 		where: { id: courseId },
 		data: { published: !course.published },
@@ -121,6 +136,11 @@ export async function togglePublish(courseId) {
 
 export async function deleteCourse(courseId) {
 	await requireAdmin();
+
+	const enrollmentsCount = await prisma.enrollment.count({ where: { courseId } });
+	if (enrollmentsCount > 0) {
+		return { error: `Suppression bloquee: ${enrollmentsCount} inscription(s) active(s)` };
+	}
 
 	await prisma.course.delete({ where: { id: courseId } });
 	revalidatePath("/admin/courses");

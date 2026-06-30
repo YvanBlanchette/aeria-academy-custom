@@ -18,6 +18,7 @@ async function requireAdmin() {
 
 const articleSchema = z.object({
 	title: z.string().min(3, "Le titre doit faire au moins 3 caractères").max(200),
+	slug: z.string().max(240).optional().nullable(),
 	excerpt: z.string().max(500).optional().nullable(),
 	coverImage: z.string().optional().nullable(),
 	content: z.string().min(10, "Le contenu est trop court"),
@@ -31,6 +32,7 @@ function parseFormData(formData) {
 
 	return {
 		title: formData.get("title"),
+		slug: formData.get("slug") || null,
 		excerpt: formData.get("excerpt") || null,
 		coverImage: formData.get("coverImage") || null,
 		content: formData.get("content"),
@@ -50,7 +52,8 @@ export async function createArticle(formData) {
 	const data = parsed.data;
 
 	// Génère un slug unique
-	let slug = slugify(data.title);
+	let slug = slugify(data.slug || data.title);
+	if (!slug) slug = `article-${Date.now()}`;
 	const existing = await prisma.article.findUnique({ where: { slug } });
 	if (existing) slug = `${slug}-${Date.now()}`;
 
@@ -87,11 +90,23 @@ export async function updateArticle(articleId, formData) {
 
 	const data = parsed.data;
 	const excerpt = data.excerpt || generateExcerpt(data.content);
+	let nextSlug = slugify(data.slug || data.title);
+	if (!nextSlug) nextSlug = `article-${Date.now()}`;
+
+	const existingWithSlug = await prisma.article.findFirst({
+		where: {
+			slug: nextSlug,
+			NOT: { id: articleId },
+		},
+		select: { id: true },
+	});
+	if (existingWithSlug) nextSlug = `${nextSlug}-${Date.now()}`;
 
 	// Update les champs simples
 	await prisma.article.update({
 		where: { id: articleId },
 		data: {
+			slug: nextSlug,
 			title: data.title,
 			excerpt,
 			coverImage: data.coverImage,
@@ -147,6 +162,66 @@ export async function deleteArticle(articleId) {
 	revalidatePath("/admin/articles");
 	revalidatePath("/resources");
 	redirect("/admin/articles");
+}
+
+export async function deleteArticleInline(articleId) {
+	await requireAdmin();
+
+	await prisma.article.delete({ where: { id: articleId } });
+
+	revalidatePath("/admin/articles");
+	revalidatePath("/resources");
+	return { success: true };
+}
+
+export async function duplicateArticleInline(articleId) {
+	const session = await requireAdmin();
+
+	const source = await prisma.article.findUnique({
+		where: { id: articleId },
+		include: {
+			tags: {
+				select: {
+					tagId: true,
+				},
+			},
+		},
+	});
+
+	if (!source) {
+		return { error: "Article introuvable" };
+	}
+
+	let baseSlug = slugify(`${source.title}-copie`);
+	if (!baseSlug) baseSlug = `article-copie-${Date.now()}`;
+	let slug = baseSlug;
+	let i = 2;
+	while (await prisma.article.findUnique({ where: { slug } })) {
+		slug = `${baseSlug}-${i}`;
+		i += 1;
+	}
+
+	const duplicated = await prisma.article.create({
+		data: {
+			slug,
+			title: `${source.title} (copie)`,
+			excerpt: source.excerpt,
+			coverImage: source.coverImage,
+			content: source.content,
+			requiredTier: source.requiredTier,
+			authorId: session.user.id,
+			published: false,
+			publishedAt: null,
+			viewCount: 0,
+			tags: {
+				create: source.tags.map((t) => ({ tagId: t.tagId })),
+			},
+		},
+		select: { id: true },
+	});
+
+	revalidatePath("/admin/articles");
+	return { success: true, articleId: duplicated.id };
 }
 
 // ============== TAGS ==============

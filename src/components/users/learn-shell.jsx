@@ -7,6 +7,7 @@ import { UserButtonClient } from "../ui/user-button-client";
 import Footer from "../partials/Footer";
 import Link from "next/link";
 import { ArrowLeft, X } from "lucide-react";
+import { markdownToExcerpt } from "@/lib/markdown-excerpt";
 
 function FloatingLessonsTrigger() {
 	const { open } = useSidebar();
@@ -30,6 +31,7 @@ function FloatingLessonsTrigger() {
 
 export function LearnShell({ course, completedSet, defaultOpen, children, session }) {
 	const user = session?.user;
+	const summary = markdownToExcerpt(course.description, 120);
 
 	return (
 		<SidebarProvider
@@ -87,7 +89,7 @@ export function LearnShell({ course, completedSet, defaultOpen, children, sessio
 							<div>
 								<h1 className="line-clamp-2 text-base font-bold leading-tight sm:text-xl lg:text-3xl">{course.title}</h1>
 								<div className="mt-0.5 flex items-center gap-2">
-									<p className="line-clamp-1 hidden text-sm text-muted-foreground md:block">{course.description}</p>
+									<p className="line-clamp-1 hidden text-sm text-muted-foreground md:block">{summary}</p>
 								</div>
 							</div>
 						</div>

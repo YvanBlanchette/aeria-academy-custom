@@ -2,8 +2,8 @@ export const renameUserRole = (role) => {
 	switch (role) {
 		case "STUDENT":
 			return "Étudiant";
-		case "TEACHER":
-			return "Professeur";
+		case "INSTRUCTOR":
+			return "Instructeur";
 		case "ADMIN":
 			return "Administrateur";
 		default:

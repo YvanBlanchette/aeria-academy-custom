@@ -22,20 +22,20 @@ export function AdminSidebar({ user, children }) {
 			style={{
 				"--sidebar-width": "22.5rem",
 				"--sidebar-width-mobile": "22.5rem",
-				"--background": "#f5f5f5",
 			}}
 		>
 			<Sidebar
+				variant="inset"
 				collapsible="offcanvas"
-				className="border-r shadow-lg"
+				className="border-r border-sidebar-border"
 			>
-				<SidebarHeader className="flex h-[90px] items-center justify-center border-b bg-white">
+				<SidebarHeader className="flex h-22.5 items-center justify-center border-b border-sidebar-border bg-sidebar/95 backdrop-blur">
 					<Logo
 						locale="fr"
 						scrolled
 					/>
 				</SidebarHeader>
-				<SidebarContent className="bg-white">
+				<SidebarContent className="bg-sidebar/95">
 					<div className="space-y-1 p-3">
 						{navItems.map((item) => {
 							const isActive = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
@@ -45,8 +45,8 @@ export function AdminSidebar({ user, children }) {
 									key={item.href}
 									href={item.href}
 									className={cn(
-										"flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-										isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+										"flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+										isActive ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent",
 									)}
 								>
 									<Icon className="h-4 w-4" />
@@ -56,7 +56,13 @@ export function AdminSidebar({ user, children }) {
 						})}
 					</div>
 				</SidebarContent>
-				<SidebarFooter className="border-t bg-white">
+				<SidebarFooter className="border-t border-sidebar-border bg-sidebar/95">
+					<Badge
+						variant="outline"
+						className="mx-2 mb-1 justify-center"
+					>
+						Accès administrateur
+					</Badge>
 					<Button
 						variant="ghost"
 						className="w-full justify-start gap-3 px-3"
@@ -69,7 +75,7 @@ export function AdminSidebar({ user, children }) {
 			</Sidebar>
 
 			<SidebarInset>
-				<header className="sticky top-0 z-10 flex h-[90px] items-center border-b bg-white shadow-sm">
+				<header className="sticky top-0 z-10 flex h-22.5 items-center border-b border-border/70 bg-background/80 backdrop-blur-xl">
 					<div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 lg:px-6">
 						<div className="flex items-center gap-3">
 							<SidebarTrigger />
@@ -83,7 +89,7 @@ export function AdminSidebar({ user, children }) {
 								<div className="hidden text-right sm:block mr-2">
 									<div className="hidden text-right sm:block -space-y-0.5">
 										<p className="text-sm font-medium">{user.name}</p>
-										<p className="text-sm font-medium text-neutral-500">{user.email}</p>
+										<p className="text-sm font-medium text-muted-foreground">{user.email}</p>
 									</div>
 								</div>
 								<UserButtonClient
@@ -94,7 +100,7 @@ export function AdminSidebar({ user, children }) {
 						)}
 					</div>
 				</header>
-				<main className="flex-1 overflow-y-auto bg-muted/20">{children}</main>
+				<main className="dashboard-shell flex-1 overflow-y-auto bg-linear-to-b from-background via-background to-muted/30">{children}</main>
 			</SidebarInset>
 		</SidebarProvider>
 	);

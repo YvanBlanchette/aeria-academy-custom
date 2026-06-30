@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
 import { togglePublish, deleteCourse } from "@/app/admin/courses/actions";
 
 export function CourseRowActions({ course }) {
+	const router = useRouter();
 	const [deleteOpen, setDeleteOpen] = useState(false);
 
 	async function handleTogglePublish() {
@@ -27,6 +29,7 @@ export function CourseRowActions({ course }) {
 			toast.error(result.error);
 		} else {
 			toast.success(course.published ? "Cours dépublié" : "Cours publié");
+			router.refresh();
 		}
 	}
 
@@ -36,6 +39,7 @@ export function CourseRowActions({ course }) {
 			toast.error(result.error);
 		} else {
 			toast.success("Cours supprimé");
+			router.refresh();
 		}
 		setDeleteOpen(false);
 	}

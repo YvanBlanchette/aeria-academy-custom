@@ -15,6 +15,7 @@ export default function RootLayout({ children }) {
 	return (
 		<html
 			lang="fr"
+			suppressHydrationWarning
 			className={cn("font-sans", inter.variable)}
 		>
 			<head>
@@ -23,9 +24,11 @@ export default function RootLayout({ children }) {
 					content="ÆRIA"
 				/>
 			</head>
-			<body suppressHydrationWarning>
-				<Providers>{children}</Providers>
-				<Toaster richColors />
+			<body className="bg-background text-foreground transition-colors">
+				<Providers>
+					{children}
+					<Toaster richColors />
+				</Providers>
 			</body>
 		</html>
 	);

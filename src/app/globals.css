@@ -167,3 +167,12 @@
 	-webkit-touch-callout: none;
 	-webkit-tap-highlight-color: transparent;
 }
+
+/* Legacy dashboard pages still use light utility classes; remap them in dark mode. */
+.dark .dashboard-shell .bg-neutral-100 {
+	background-color: transparent !important;
+}
+
+.dark .dashboard-shell .bg-white {
+	background-color: var(--card) !important;
+}

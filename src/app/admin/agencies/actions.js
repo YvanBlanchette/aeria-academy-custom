@@ -40,8 +40,9 @@ const agencySchema = z.object({
 });
 
 function parseFormData(formData) {
+	const nameRaw = formData.get("name");
 	return {
-		name: formData.get("name"),
+		name: typeof nameRaw === "string" ? nameRaw.trim() : "",
 		address: formData.get("address") || null,
 		city: formData.get("city") || null,
 		province: formData.get("province") || null,
@@ -118,6 +119,7 @@ export async function approveAgency(agencyId) {
 
 export async function rejectAgency(agencyId) {
 	await requireAdmin();
+	if (!agencyId) return { error: "Agence introuvable" };
 	// On délie les membres avant de supprimer
 	await prisma.userProfile.updateMany({
 		where: { agencyId },
@@ -126,6 +128,20 @@ export async function rejectAgency(agencyId) {
 	await prisma.agency.delete({ where: { id: agencyId } });
 	revalidatePath("/admin/agencies");
 	redirect("/admin/agencies");
+}
+
+export async function deleteAgencyInline(agencyId) {
+	await requireAdmin();
+	if (!agencyId) return { error: "Agence introuvable" };
+
+	await prisma.userProfile.updateMany({
+		where: { agencyId },
+		data: { agencyId: null, agencyRole: null },
+	});
+
+	await prisma.agency.delete({ where: { id: agencyId } });
+	revalidatePath("/admin/agencies");
+	return { success: true };
 }
 
 export async function changeAgencyAdmin(agencyId, newAdminUserId) {

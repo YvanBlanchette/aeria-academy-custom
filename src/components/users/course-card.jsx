@@ -4,6 +4,7 @@ import { BookOpen, Users, Crown, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { dict } from "@/lib/i18n";
+import { markdownToExcerpt } from "@/lib/markdown-excerpt";
 
 export function CourseCard({
 	course,
@@ -47,7 +48,9 @@ export function CourseCard({
 
 				<CardContent className={`mb-auto space-y-2 ${contentClassName}`}>
 					<CardTitle className={`line-clamp-2 ${titleClassName}`}>{course.title}</CardTitle>
-					{course.description ? <p className={`line-clamp-3 text-sm text-muted-foreground ${descriptionClassName}`}>{course.description}</p> : null}
+					{course.description ? (
+						<p className={`line-clamp-3 text-sm text-muted-foreground ${descriptionClassName}`}>{markdownToExcerpt(course.description, 180)}</p>
+					) : null}
 					{children ? <div className="space-y-3">{children}</div> : null}
 				</CardContent>
 

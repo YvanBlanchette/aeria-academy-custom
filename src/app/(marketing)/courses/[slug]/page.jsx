@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { enrollInCourse } from "./actions";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getLocaleFromCookie } from "@/lib/locale";
 
@@ -61,7 +62,6 @@ export default async function CourseDetailPage({ params }) {
 					<Card className="sticky top-24 pb-10 overflow-hidden">
 						{course.thumbnail ? (
 							<div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted -translate-y-4">
-								{/* eslint-disable-next-line @next/next/no-img-element */}
 								<Image
 									width={1280}
 									height={720}
@@ -76,7 +76,9 @@ export default async function CourseDetailPage({ params }) {
 						<CardContent className="space-y-4 px-6">
 							<div>
 								<h1 className="text-3xl font-bold">{course.title}</h1>
-								<p className="mt-4 text-sm text-muted-foreground">{course.description}</p>
+								<div className="prose prose-sm mt-4 max-w-none text-muted-foreground">
+									<ReactMarkdown>{course.description}</ReactMarkdown>
+								</div>
 							</div>
 							<div className="flex items-center gap-6 text-sm">
 								<span className="flex items-center gap-2">

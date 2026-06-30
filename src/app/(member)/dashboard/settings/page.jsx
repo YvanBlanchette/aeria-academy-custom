@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSettingsClient } from "./settings-client";
-import { DEFAULT_DASHBOARD_PREFERENCES } from "./actions";
+import { DEFAULT_DASHBOARD_PREFERENCES } from "./defaults";
 
 export const metadata = { title: "Paramètres | ÆRIA Voyages Academy" };
 

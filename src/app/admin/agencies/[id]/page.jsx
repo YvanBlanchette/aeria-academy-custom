@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Building2, Mail, Phone, Globe, MapPin, Users } from "lucide-react";
+import { Clock3, Mail, Phone, Globe, MapPin, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { AgencyForm } from "@/components/admin/agency-form";
 import { ApproveButton, RejectButton, RemoveMemberButton } from "@/components/admin/agency-actions-buttons";
+import { AgencyAdminSelector } from "@/components/admin/agency-admin-selector";
 
 export default async function AdminAgencyDetailPage({ params }) {
 	const { id } = await params;
@@ -41,6 +42,65 @@ export default async function AdminAgencyDetailPage({ params }) {
 			select: { id: true, name: true, email: true, image: true },
 		});
 	}
+
+	const adminCandidateMap = new Map();
+	for (const member of agency.members) {
+		adminCandidateMap.set(member.user.id, {
+			value: member.user.id,
+			label: `${member.user.name || "Sans nom"} (${member.user.email})`,
+		});
+	}
+	if (agencyAdmin && !adminCandidateMap.has(agencyAdmin.id)) {
+		adminCandidateMap.set(agencyAdmin.id, {
+			value: agencyAdmin.id,
+			label: `${agencyAdmin.name || "Sans nom"} (${agencyAdmin.email})`,
+		});
+	}
+	const adminCandidates = Array.from(adminCandidateMap.values()).sort((a, b) => a.label.localeCompare(b.label, "fr"));
+
+	const activityEvents = [
+		{
+			id: `created-${agency.id}`,
+			time: agency.createdAt,
+			title: "Agence créée",
+			description: `${agency.name} a été ajoutée dans AERIA.`,
+		},
+		...(agency.updatedAt.getTime() - agency.createdAt.getTime() > 60 * 1000
+			? [
+					{
+						id: `updated-${agency.id}`,
+						time: agency.updatedAt,
+						title: "Fiche agence mise à jour",
+						description: "Des informations de profil ont été modifiées.",
+					},
+				]
+			: []),
+		...(agency.approved
+			? [
+					{
+						id: `approved-${agency.id}`,
+						time: agency.updatedAt,
+						title: "Statut approuvé",
+						description: "L'agence est actuellement approuvée.",
+					},
+				]
+			: [
+					{
+						id: `pending-${agency.id}`,
+						time: agency.createdAt,
+						title: "En attente d'approbation",
+						description: "L'agence n'est pas encore approuvée.",
+					},
+				]),
+		...agency.members.map((member) => ({
+			id: `member-${member.userId}`,
+			time: member.createdAt,
+			title: "Membre rattaché",
+			description: `${member.user.name || member.user.email} a rejoint l'agence${member.agencyRole ? ` (${member.agencyRole})` : ""}.`,
+		})),
+	]
+		.sort((a, b) => b.time.getTime() - a.time.getTime())
+		.slice(0, 10);
 
 	return (
 		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
@@ -110,6 +170,14 @@ export default async function AdminAgencyDetailPage({ params }) {
 							) : (
 								<p className="text-sm text-muted-foreground">Aucun admin défini</p>
 							)}
+
+							<div className="mt-4 border-t pt-4">
+								<AgencyAdminSelector
+									agencyId={agency.id}
+									currentAdminUserId={agency.adminUserId}
+									options={adminCandidates}
+								/>
+							</div>
 						</CardContent>
 					</Card>
 
@@ -198,6 +266,33 @@ export default async function AdminAgencyDetailPage({ params }) {
 									<Globe className="h-4 w-4" />
 									Site web ↗
 								</a>
+							)}
+						</CardContent>
+					</Card>
+
+					<Card>
+						<CardHeader>
+							<CardTitle className="text-base flex items-center gap-2">
+								<Clock3 className="h-4 w-4" />
+								Activité agence
+							</CardTitle>
+						</CardHeader>
+						<CardContent>
+							{activityEvents.length === 0 ? (
+								<p className="text-sm text-muted-foreground">Aucun événement récent</p>
+							) : (
+								<ul className="space-y-3">
+									{activityEvents.map((event) => (
+										<li
+											key={event.id}
+											className="border-l pl-3"
+										>
+											<p className="text-sm font-medium">{event.title}</p>
+											<p className="text-xs text-muted-foreground">{event.description}</p>
+											<p className="text-[11px] text-muted-foreground mt-1">{new Date(event.time).toLocaleString("fr-FR")}</p>
+										</li>
+									))}
+								</ul>
 							)}
 						</CardContent>
 					</Card>
