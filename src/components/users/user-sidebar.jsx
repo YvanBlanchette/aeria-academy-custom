@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Logo from "@/components/logo";
 import { UserButtonClient } from "@/components/ui/user-button-client";
+import { CommunityNotificationsMenu } from "@/components/ui/community-notifications-menu";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarInset, SidebarTrigger, SidebarFooter } from "@/components/ui/sidebar";
 import { userSidebarNavItems as navItems } from "@/lib/data/navigation";
 
@@ -17,9 +18,15 @@ const membershipLabel = {
 	PRIME: { label: "Prime", variant: "secondary" },
 };
 
-export function UserSidebar({ user, children }) {
+export function UserSidebar({ user, children, communityEnabled = true }) {
 	const pathname = usePathname();
-	const activeItem = navItems.find((item) => (item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href))) || navItems[0];
+	const filteredNavItems = navItems.filter((item) => (item.href === "/community" ? communityEnabled : true));
+	const withAdminShortcut =
+		user?.role === "ADMIN"
+			? [filteredNavItems[0], { href: "/admin", label: "Administration", icon: filteredNavItems[0]?.icon }, ...filteredNavItems.slice(1)]
+			: filteredNavItems;
+	const activeItem =
+		withAdminShortcut.find((item) => (item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href))) || withAdminShortcut[0];
 	const tier = membershipLabel[user.membership] || membershipLabel.FREE;
 
 	return (
@@ -33,17 +40,17 @@ export function UserSidebar({ user, children }) {
 			<Sidebar
 				variant="inset"
 				collapsible="offcanvas"
-				className="border-r border-sidebar-border"
+				className="border-r border-sidebar-border shadow-xl bg-white p-0 m-0"
 			>
-				<SidebarHeader className="flex h-22.5 items-center justify-center border-b border-sidebar-border bg-sidebar/95">
+				<SidebarHeader className="flex h-22.5 items-center justify-center border-b border-sidebar-border bg-white">
 					<Logo
 						locale="fr"
 						scrolled
 					/>
 				</SidebarHeader>
-				<SidebarContent className="bg-sidebar/95">
-					<div className="space-y-1 p-3">
-						{navItems.map((item) => {
+				<SidebarContent className="bg-white">
+					<div>
+						{withAdminShortcut.map((item) => {
 							const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
 							const Icon = item.icon;
 							return (
@@ -51,8 +58,8 @@ export function UserSidebar({ user, children }) {
 									key={item.href}
 									href={item.href}
 									className={cn(
-										"flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
-										isActive ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent",
+										"flex items-center gap-3 px-6 py-5 text-sm transition-all",
+										isActive ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-neutral-200",
 									)}
 								>
 									<Icon className="h-4 w-4" />
@@ -62,7 +69,7 @@ export function UserSidebar({ user, children }) {
 						})}
 					</div>
 				</SidebarContent>
-				<SidebarFooter className="border-t border-sidebar-border bg-sidebar/95">
+				<SidebarFooter className="border-t border-sidebar-border flex flex-col items-center justify-between gap-2 py-4 px-0 bg-white">
 					<Badge
 						variant={tier.variant}
 						className="mx-2 mb-1 justify-center"
@@ -72,7 +79,7 @@ export function UserSidebar({ user, children }) {
 					<Button
 						asChild
 						variant="ghost"
-						className="w-full justify-start gap-3 px-3"
+						className="flex items-center justify-center gap-3 py-4 hover:bg-neutral-300 rounded-none w-full"
 					>
 						<Link href="/">
 							<BookOpen className="h-4 w-4" />
@@ -82,9 +89,9 @@ export function UserSidebar({ user, children }) {
 				</SidebarFooter>
 			</Sidebar>
 
-			<SidebarInset>
-				<header className="sticky top-0 z-10 flex h-22.5 items-center border-b border-border/70 bg-background/80 backdrop-blur-xl">
-					<div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 lg:px-6">
+			<SidebarInset className="h-svh overflow-hidden md:m-0 md:rounded-none md:shadow-none">
+				<header className="sticky top-0 z-10 flex h-22.5 items-center border-b border-border/70 bg-white shadow-xl">
+					<div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 lg:px-8">
 						<div className="flex items-center gap-3">
 							<SidebarTrigger />
 							<div>
@@ -93,11 +100,8 @@ export function UserSidebar({ user, children }) {
 							</div>
 						</div>
 						{user && (
-							<div className="flex items-center gap-3">
-								<div className="hidden text-right sm:block">
-									<p className="text-sm font-medium">{user.name}</p>
-									<p className="text-sm font-medium text-muted-foreground">{user.email}</p>
-								</div>
+							<div className="flex items-center gap-4 mr-6">
+								<CommunityNotificationsMenu />
 								<UserButtonClient
 									user={user}
 									size="lg"
@@ -106,7 +110,7 @@ export function UserSidebar({ user, children }) {
 						)}
 					</div>
 				</header>
-				<main className="dashboard-shell flex-1 overflow-y-auto bg-linear-to-b from-background via-background to-muted/30">{children}</main>
+				<main className="dashboard-shell flex-1 overflow-y-auto bg-neutral-100">{children}</main>
 			</SidebarInset>
 		</SidebarProvider>
 	);

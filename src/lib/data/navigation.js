@@ -1,4 +1,4 @@
-import { LayoutDashboard, BookOpen, Users, Settings, Award, User, CreditCard, Building2, FileText } from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, Settings, Award, User, CreditCard, Building2, FileText, MessagesSquare } from "lucide-react";
 
 export const adminSidebarNavItems = [
 	{ href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
@@ -12,9 +12,20 @@ export const adminSidebarNavItems = [
 export const userSidebarNavItems = [
 	{ href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
 	{ href: "/dashboard/courses", label: "Mes cours", icon: BookOpen },
+	{ href: "/community", label: "Communauté", icon: MessagesSquare },
 	{ href: "/resources", label: "Ressources", icon: FileText },
 	{ href: "/dashboard/certificates", label: "Certificats", icon: Award },
 	{ href: "/profile", label: "Mon profil", icon: User },
 	{ href: "/dashboard/billing", label: "Abonnement", icon: CreditCard },
 	{ href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
+
+export function buildSocialTabs(userSlug) {
+	const profileHref = userSlug ? `/users/${userSlug}` : "/profile";
+
+	return [
+		{ label: "Accueil", href: "/community", iconKey: "home" },
+		{ label: "Profil", href: profileHref, iconKey: "profile" },
+		...(userSlug ? [{ label: "Abonnés", href: `/users/${userSlug}/followers`, iconKey: "users" }] : []),
+	];
+}

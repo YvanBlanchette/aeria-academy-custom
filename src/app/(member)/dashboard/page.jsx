@@ -219,8 +219,8 @@ export default async function DashboardPage() {
 		.slice(0, 6);
 
 	return (
-		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
-			<Card className="border-primary/20 bg-linear-to-br from-primary/5 via-background to-transparent">
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
+			<Card className="rounded-xl border bg-white shadow-sm">
 				<CardContent className="p-6">
 					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 						<div>
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
 			</Card>
 
 			{recentProgress && (
-				<Card className="border-primary/20 bg-linear-to-br from-primary/5 to-transparent">
+				<Card className="rounded-xl border bg-white shadow-sm">
 					<CardContent className="p-6">
 						<div className="flex items-start gap-4">
 							<div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 shrink-0">
@@ -267,7 +267,7 @@ export default async function DashboardPage() {
 			)}
 
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-				<Card>
+				<Card className="shadow-sm">
 					<CardContent className="p-6">
 						<div className="flex items-center justify-between">
 							<div>
@@ -279,7 +279,7 @@ export default async function DashboardPage() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card className="shadow-sm">
 					<CardContent className="p-6">
 						<div className="flex items-center justify-between">
 							<div>
@@ -291,7 +291,7 @@ export default async function DashboardPage() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card className="shadow-sm">
 					<CardContent className="p-6">
 						<div className="flex items-center justify-between">
 							<div>
@@ -303,7 +303,7 @@ export default async function DashboardPage() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card className="shadow-sm">
 					<CardContent className="p-6">
 						<div className="flex items-center justify-between">
 							<div>
@@ -325,7 +325,7 @@ export default async function DashboardPage() {
 
 			<section>
 				<div className="flex items-center justify-between mb-4">
-					<h2 className="text-2xl font-bold">Mes cours</h2>
+					<h2 className="text-2xl font-semibold">Mes cours</h2>
 					{enrollmentCount > 4 && (
 						<Button
 							asChild
@@ -337,7 +337,7 @@ export default async function DashboardPage() {
 				</div>
 
 				{recentWithProgress.length === 0 ? (
-					<Card>
+					<Card className="shadow-sm">
 						<CardContent className="p-12 text-center space-y-4">
 							<BookOpen className="h-12 w-12 text-muted-foreground/40 mx-auto" />
 							<div>
@@ -381,7 +381,7 @@ export default async function DashboardPage() {
 			</section>
 
 			<div className="grid gap-6 xl:grid-cols-2">
-				<Card>
+				<Card className="shadow-sm">
 					<CardContent className="p-6 space-y-4">
 						<div className="flex items-center gap-2">
 							<CalendarClock className="h-5 w-5 text-primary" />
@@ -394,7 +394,7 @@ export default async function DashboardPage() {
 								{activity.map((item) => (
 									<li
 										key={item.id}
-										className="rounded-lg border p-3"
+										className="rounded-lg border bg-white p-3"
 									>
 										<div className="flex items-start justify-between gap-3">
 											<div className="min-w-0">
@@ -417,14 +417,14 @@ export default async function DashboardPage() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card className="shadow-sm">
 					<CardContent className="p-6 space-y-4">
 						<div className="flex items-center gap-2">
 							<CheckCircle2 className="h-5 w-5 text-primary" />
 							<h2 className="text-xl font-semibold">Prochain objectif</h2>
 						</div>
 						{certificateCount === 0 ? (
-							<div className="rounded-lg border bg-card p-4 space-y-2">
+							<div className="rounded-lg border bg-white p-4 space-y-2">
 								<p className="font-medium">Obtenir ton premier certificat</p>
 								<p className="text-sm text-muted-foreground">Termine un parcours complet pour débloquer ton certificat officiel ÆRIA.</p>
 								<Button
@@ -435,7 +435,7 @@ export default async function DashboardPage() {
 								</Button>
 							</div>
 						) : (
-							<div className="rounded-lg border bg-card p-4 space-y-2">
+							<div className="rounded-lg border bg-white p-4 space-y-2">
 								<p className="font-medium">Tu progresses très bien</p>
 								<p className="text-sm text-muted-foreground">Déjà {certificateCount} certificat(s) obtenu(s). Continue pour débloquer le niveau suivant.</p>
 								<Button
@@ -456,7 +456,7 @@ export default async function DashboardPage() {
 					<div className="flex items-center justify-between mb-4">
 						<div className="flex items-center gap-2">
 							<Sparkles className="h-5 w-5 text-yellow-600" />
-							<h2 className="text-2xl font-bold">À découvrir</h2>
+							<h2 className="text-2xl font-semibold">À découvrir</h2>
 						</div>
 						<Button
 							asChild
@@ -495,7 +495,7 @@ export default async function DashboardPage() {
 					<div className="flex items-center justify-between mb-4">
 						<div className="flex items-center gap-2">
 							<FileText className="h-5 w-5 text-primary" />
-							<h2 className="text-2xl font-bold">Dernières ressources</h2>
+							<h2 className="text-2xl font-semibold">Dernières ressources</h2>
 						</div>
 						<Button
 							asChild
@@ -511,7 +511,7 @@ export default async function DashboardPage() {
 								key={article.id}
 								href={`/resources/${article.slug}`}
 							>
-								<Card className="h-full overflow-hidden group hover:shadow-lg transition-shadow">
+								<Card className="h-full overflow-hidden border bg-white shadow-sm group hover:shadow-md transition-shadow">
 									{article.coverImage && (
 										<div className="aspect-video w-full overflow-hidden bg-muted -translate-y-4">
 											{/* eslint-disable-next-line @next/next/no-img-element */}

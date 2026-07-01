@@ -26,6 +26,18 @@ enum LessonType {
   PDF
 }
 
+enum CommunityPostType {
+  UPDATE
+  QUESTION
+  CELEBRATION
+}
+
+enum CommunityNotificationType {
+  POST_LIKE
+  POST_COMMENT
+  FOLLOW
+}
+
 model User {
   id            String    @id @default(cuid())
   username      String?   @unique
@@ -52,8 +64,29 @@ model User {
   quizAttempts  QuizAttempt[]
   certificates  Certificate[]
   articles      Article[]
+  communityPosts CommunityPost[]
+  communityComments CommunityComment[]
+  communityPostLikes CommunityPostLike[]
+  communityNotificationsReceived CommunityNotification[] @relation("CommunityNotificationRecipient")
+  communityNotificationsSent CommunityNotification[] @relation("CommunityNotificationActor")
+  followers UserFollow[] @relation("UserFollowers")
+  following UserFollow[] @relation("UserFollowing")
   settingsAuditLogs AdminSettingsAuditLog[]
   dashboardSettings UserDashboardSettings?
+}
+
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model UserProfile {
@@ -74,12 +107,14 @@ model UserProfile {
   jobTitle    String?               // "Conseillère en voyages chez X"
   company     String?
   websiteUrl  String?
+  coverImage  String?
 
   // Liens sociaux (flexible, pas besoin de migration pour ajouter de nouvelles plateformes)
   socialLinks Json?    // { facebook: "https://...", linkedin: "...", instagram: "...", etc. }
 
   // Préférences d'affichage
   publicProfile Boolean @default(false)  // si true, /profile/[username] est public
+  publicVisibility Json?
 
   agencyId    String?
   agency      Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
@@ -269,6 +304,76 @@ model ContactMessage {
   createdAt     DateTime @default(now())
 
   @@index([createdAt])
+}
+
+model CommunityPost {
+  id         String            @id @default(cuid())
+  authorId   String
+  type       CommunityPostType @default(UPDATE)
+  content    String            @db.Text
+  imageUrl   String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  author     User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments   CommunityComment[]
+  likes      CommunityPostLike[]
+  notifications CommunityNotification[]
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([type, createdAt])
+}
+
+model CommunityComment {
+  id         String        @id @default(cuid())
+  postId     String
+  authorId   String
+  content    String        @db.Text
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  notifications CommunityNotification[]
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+}
+
+model CommunityPostLike {
+  id         String        @id @default(cuid())
+  postId     String
+  userId     String
+  createdAt  DateTime      @default(now())
+
+  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model CommunityNotification {
+  id          String                    @id @default(cuid())
+  recipientId String
+  actorId     String
+  type        CommunityNotificationType
+  postId      String?
+  commentId   String?
+  isRead      Boolean                   @default(false)
+  readAt      DateTime?
+  createdAt   DateTime                  @default(now())
+
+  recipient   User                      @relation("CommunityNotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor       User                      @relation("CommunityNotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  post        CommunityPost?            @relation(fields: [postId], references: [id], onDelete: SetNull)
+  comment     CommunityComment?         @relation(fields: [commentId], references: [id], onDelete: SetNull)
+
+  @@index([recipientId, isRead, createdAt])
+  @@index([recipientId, createdAt])
+  @@index([postId])
+  @@index([commentId])
 }
 
 // Tables NextAuth

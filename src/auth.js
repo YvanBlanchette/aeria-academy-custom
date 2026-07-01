@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/auth.config";
+import { generateDefaultUsernameForUser } from "@/lib/username";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
 	...authConfig,
@@ -63,6 +64,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				session.user.image = token.picture ?? session.user.image;
 			}
 			return session;
+		},
+	},
+	events: {
+		async createUser({ user }) {
+			if (!user?.id || user.username) return;
+
+			const username = await generateDefaultUsernameForUser({
+				name: user.name,
+				email: user.email,
+				id: user.id,
+				excludeUserId: user.id,
+			});
+
+			await prisma.user.update({
+				where: { id: user.id },
+				data: { username },
+			});
 		},
 	},
 });

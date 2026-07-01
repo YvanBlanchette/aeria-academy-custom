@@ -137,7 +137,7 @@ export default async function AdminArticlesPage({ searchParams }) {
 	}
 
 	return (
-		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-transparent">
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 				<div className="rounded-lg border bg-white p-4 shadow-sm">
 					<div className="flex items-center justify-between">
@@ -246,7 +246,7 @@ export default async function AdminArticlesPage({ searchParams }) {
 								name="q"
 								defaultValue={q}
 								placeholder="Rechercher un article"
-								className="h-9 rounded-md border bg-background pl-8 pr-3 text-sm"
+								className="h-9 rounded-full bg-neutral-50 shadow-inner border pl-8 pr-3 text-sm"
 							/>
 							{status !== "all" ? (
 								<input
@@ -283,31 +283,6 @@ export default async function AdminArticlesPage({ searchParams }) {
 							Gérer les tags →
 						</Link>
 					</div>
-				</div>
-
-				<div className="flex flex-wrap items-center gap-2 border-t pt-3">
-					<Link
-						href={hrefWith({ tag: "", page: 1 })}
-						className={`px-2 py-1 rounded text-xs border ${tag === "" ? "bg-primary text-primary-foreground border-primary" : "bg-white"}`}
-					>
-						Tous les tags
-					</Link>
-					{allTags.map((t) => (
-						<Link
-							key={t.id}
-							href={hrefWith({ tag: t.slug, page: 1 })}
-							className={`px-2 py-1 rounded text-xs border ${tag === t.slug ? "bg-primary text-primary-foreground border-primary" : "bg-white"}`}
-						>
-							{t.name} ({t._count.articles})
-						</Link>
-					))}
-				</div>
-
-				<div className="flex items-center justify-between text-sm text-muted-foreground">
-					<p>{filteredCount === 0 ? "Aucun résultat" : `${pageStart}-${pageEnd} sur ${filteredCount} articles`}</p>
-					<p>
-						Tri: <span className="font-medium text-foreground">{sort}</span> ({dir})
-					</p>
 				</div>
 			</div>
 
@@ -366,7 +341,10 @@ export default async function AdminArticlesPage({ searchParams }) {
 							</TableHeader>
 							<TableBody>
 								{articles.map((a) => (
-									<TableRow key={a.id}>
+									<TableRow
+										key={a.id}
+										className="overflow-x-hidden"
+									>
 										<TableCell className="text-center border">
 											<Link
 												href={`/admin/articles/${a.id}`}
@@ -374,7 +352,6 @@ export default async function AdminArticlesPage({ searchParams }) {
 											>
 												{a.title}
 											</Link>
-											<p className="text-xs text-muted-foreground">/{a.slug}</p>
 										</TableCell>
 										<TableCell className="text-center border">
 											<div className="flex flex-wrap items-center justify-center gap-1">

@@ -195,11 +195,12 @@ function TextRenderer({ content, lessonTitle }) {
 
 	useEffect(() => {
 		if (tableOfContents.length === 0 || typeof window === "undefined") {
-			setActiveId(null);
 			return undefined;
 		}
 
-		setActiveId(tableOfContents[0].id);
+		queueMicrotask(() => {
+			setActiveId(tableOfContents[0].id);
+		});
 
 		const headingElements = tableOfContents.map((item) => document.getElementById(item.id)).filter(Boolean);
 
@@ -344,8 +345,7 @@ function LessonContentSwitch({ lesson, prevHref, nextHref }) {
 }
 
 export function LessonPlayer({ lesson, prevHref, nextHref }) {
-	const [mounted, setMounted] = useState(false);
-	useEffect(() => setMounted(true), []);
+	const mounted = typeof window !== "undefined";
 
 	if (!mounted && lesson.type !== "TEXT") {
 		return <div className="aspect-video w-full rounded-lg bg-muted animate-pulse" />;

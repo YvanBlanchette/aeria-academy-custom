@@ -255,13 +255,6 @@ export default async function UsersPage({ searchParams }) {
 						</Link>
 					</div>
 				</div>
-
-				<div className="flex items-center justify-between text-sm text-muted-foreground">
-					<p>{filteredCount === 0 ? "Aucun résultat" : `${pageStart}-${pageEnd} sur ${filteredCount} membres`}</p>
-					<p>
-						Tri: <span className="font-medium text-foreground">{sort}</span> ({dir})
-					</p>
-				</div>
 			</div>
 
 			{users.length === 0 ? (

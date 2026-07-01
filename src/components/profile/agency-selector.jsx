@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Search, Plus, X, Building2, Edit } from "lucide-react";
@@ -17,21 +17,28 @@ export function AgencySelector({ profile, currentAgency, isAgencyAdmin }) {
 	const [searching, setSearching] = useState(false);
 	const [showCreate, setShowCreate] = useState(false);
 	const [showEdit, setShowEdit] = useState(false);
+	const searchTimerRef = useRef(null);
 
-	// Debounce search
-	useEffect(() => {
-		if (!query || query.length < 2) {
+	function handleQueryChange(value) {
+		setQuery(value);
+
+		if (searchTimerRef.current) {
+			clearTimeout(searchTimerRef.current);
+		}
+
+		if (!value || value.length < 2) {
+			setSearching(false);
 			setResults([]);
 			return;
 		}
+
 		setSearching(true);
-		const timer = setTimeout(async () => {
-			const found = await searchAgencies(query);
+		searchTimerRef.current = setTimeout(async () => {
+			const found = await searchAgencies(value);
 			setResults(found);
 			setSearching(false);
 		}, 300);
-		return () => clearTimeout(timer);
-	}, [query]);
+	}
 
 	async function handleJoin(agencyId) {
 		const result = await joinAgency(agencyId);
@@ -41,6 +48,7 @@ export function AgencySelector({ profile, currentAgency, isAgencyAdmin }) {
 		}
 		toast.success("Tu as rejoint l'agence");
 		setQuery("");
+		setSearching(false);
 		setResults([]);
 		router.refresh();
 	}
@@ -141,7 +149,7 @@ export function AgencySelector({ profile, currentAgency, isAgencyAdmin }) {
 								<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 								<Input
 									value={query}
-									onChange={(e) => setQuery(e.target.value)}
+									onChange={(e) => handleQueryChange(e.target.value)}
 									placeholder="Rechercher mon agence..."
 									className="pl-9"
 								/>

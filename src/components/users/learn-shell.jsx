@@ -4,6 +4,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarInset, 
 import { LessonSidebar } from "./lesson-sidebar";
 import Logo from "@/components/logo";
 import { UserButtonClient } from "../ui/user-button-client";
+import { CommunityNotificationsMenu } from "../ui/community-notifications-menu";
 import Footer from "../partials/Footer";
 import Link from "next/link";
 import { ArrowLeft, X } from "lucide-react";
@@ -99,6 +100,7 @@ export function LearnShell({ course, completedSet, defaultOpen, children, sessio
 									<h2 className="max-w-48 truncate text-sm font-bold md:text-base">{user?.name}</h2>
 									<p className="max-w-52 truncate text-xs text-muted-foreground">{user?.email}</p>
 								</div>
+								<CommunityNotificationsMenu />
 								<UserButtonClient
 									user={user}
 									size="lg"

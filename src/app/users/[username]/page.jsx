@@ -1,11 +1,32 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Mail, Phone, MapPin, Globe, Building2 } from "lucide-react";
+import {
+	Mail,
+	Phone,
+	MapPin,
+	Globe,
+	Building2,
+	CalendarDays,
+	MessageSquare,
+	ThumbsUp,
+	PencilLine,
+	Users,
+	UserPlus,
+	BriefcaseBusiness,
+	GraduationCap,
+} from "lucide-react";
 import { FaFacebookF, FaLinkedinIn, FaInstagram, FaYoutube, FaXTwitter, FaTiktok } from "react-icons/fa6";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent } from "@/components/ui/card";
+import { normalizePublicVisibility } from "@/lib/profile-visibility";
+import { formatSocialRelativeTime } from "@/lib/time";
+import { CommunityPostComposer } from "@/components/community/community-post-composer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ProfileCoverControls } from "@/components/profile/profile-cover-controls";
+import { followUser, unfollowUser } from "./actions";
 
 const SOCIAL_ICONS = {
 	facebook: FaFacebookF,
@@ -25,14 +46,24 @@ const SOCIAL_LABELS = {
 	tiktok: "TikTok",
 };
 
+function memberSinceLabel(dateValue) {
+	if (!dateValue) return null;
+	return new Date(dateValue).toLocaleDateString("fr-CA", {
+		year: "numeric",
+		month: "long",
+	});
+}
+
 export async function generateMetadata({ params }) {
 	const { username } = await params;
-	const user = await prisma.user.findUnique({
-		where: { username },
+	const user = await prisma.user.findFirst({
+		where: {
+			OR: [{ username: { equals: username, mode: "insensitive" } }, { id: username }],
+		},
 		include: { profile: { include: { agency: true } } },
 	});
 
-	if (!user || !user.profile?.publicProfile) {
+	if (!user) {
 		return { title: "Profil introuvable" };
 	}
 
@@ -44,9 +75,13 @@ export async function generateMetadata({ params }) {
 
 export default async function PublicProfilePage({ params }) {
 	const { username } = await params;
+	const session = await auth();
+	const currentUserId = session?.user?.id || null;
 
-	const user = await prisma.user.findUnique({
-		where: { username: username.toLowerCase() },
+	const user = await prisma.user.findFirst({
+		where: {
+			OR: [{ username: { equals: username, mode: "insensitive" } }, { id: username }],
+		},
 		include: {
 			profile: {
 				include: { agency: true },
@@ -54,14 +89,79 @@ export default async function PublicProfilePage({ params }) {
 		},
 	});
 
-	// Pas trouvé OU profil non public → 404
-	if (!user || !user.profile?.publicProfile) {
+	const canViewProfile = Boolean(user?.profile?.publicProfile || currentUserId);
+
+	if (!user || !canViewProfile) {
 		notFound();
 	}
 
-	const profile = user.profile;
-	const agency = profile.agency;
-	const socialLinks = profile.socialLinks || {};
+	const profile = user.profile ?? {};
+	const agency = profile.agency ?? null;
+	const socialLinks = profile.socialLinks && typeof profile.socialLinks === "object" ? profile.socialLinks : {};
+	const publicVisibility = normalizePublicVisibility(profile.publicVisibility ?? null);
+	const memberSince = memberSinceLabel(user.createdAt);
+	const profileUsername = user.username || username;
+
+	const [communityPostsCount, communityCommentsCount, receivedLikesCount, followersCount, followingCount, recentPosts, recentCertificates, followRecord] =
+		await Promise.all([
+			prisma.communityPost.count({ where: { authorId: user.id } }),
+			prisma.communityComment.count({ where: { authorId: user.id } }),
+			prisma.communityPostLike.count({ where: { post: { authorId: user.id } } }),
+			prisma.userFollow.count({ where: { followingId: user.id } }),
+			prisma.userFollow.count({ where: { followerId: user.id } }),
+			prisma.communityPost.findMany({
+				where: { authorId: user.id },
+				orderBy: { createdAt: "desc" },
+				take: 10,
+				select: {
+					id: true,
+					content: true,
+					imageUrl: true,
+					createdAt: true,
+					_count: { select: { likes: true, comments: true } },
+				},
+			}),
+			prisma.certificate.findMany({
+				where: { userId: user.id },
+				orderBy: { issuedAt: "desc" },
+				take: 4,
+				include: {
+					course: { select: { title: true } },
+				},
+			}),
+			currentUserId
+				? prisma.userFollow.findUnique({
+						where: {
+							followerId_followingId: {
+								followerId: currentUserId,
+								followingId: user.id,
+							},
+						},
+						select: { id: true },
+					})
+				: Promise.resolve(null),
+		]);
+
+	const isOwnProfile = !!currentUserId && currentUserId === user.id;
+	const isFollowing = !!followRecord;
+	const loginCallbackUrl = `/login?callbackUrl=/users/${profileUsername}`;
+	const showJobTitle = isOwnProfile || publicVisibility.showJobTitle;
+	const showCompany = isOwnProfile || publicVisibility.showCompany;
+	const showBio = isOwnProfile || publicVisibility.showBio;
+	const showWebsite = isOwnProfile || publicVisibility.showWebsite;
+	const showSocialLinks = isOwnProfile || publicVisibility.showSocialLinks;
+	const showAgency = isOwnProfile || publicVisibility.showAgency;
+	const showCommunityStats = isOwnProfile || publicVisibility.showCommunityStats;
+	const showCommunityPosts = isOwnProfile || publicVisibility.showCommunityPosts;
+	const showCertificates = isOwnProfile || publicVisibility.showCertificates;
+	const showFollowStats = isOwnProfile || publicVisibility.showFollowStats;
+	const hasVisibleLinks = (showWebsite && profile.websiteUrl) || (showSocialLinks && Object.keys(socialLinks).length > 0);
+	const hasPrivateContact = isOwnProfile && (user.email || profile.phone || profile.address || profile.city || profile.country || profile.postalCode);
+	const profileTabs = [
+		{ label: "Profil", href: `/users/${profileUsername}` },
+		{ label: "Followers", href: `/users/${profileUsername}/followers` },
+		{ label: "Abonnements", href: `/users/${profileUsername}/following` },
+	];
 
 	const initials = (user.name || user.email)
 		.split(" ")
@@ -71,186 +171,366 @@ export default async function PublicProfilePage({ params }) {
 		.slice(0, 2);
 
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-muted/30 to-background pt-24 pb-12">
-			<div className="container max-w-2xl mx-auto px-4 space-y-6">
-				{/* Header */}
-				<Card>
-					<CardContent className="p-8 text-center space-y-4">
-						<Avatar className="h-24 w-24 mx-auto">
-							<AvatarImage
-								src={user.image}
-								alt={user.name}
+		<div className="min-h-screen bg-[#f0f2f5] pb-12">
+			<div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+				<section className="overflow-hidden rounded-3xl border bg-card shadow-sm">
+					<div className="relative h-64 bg-linear-to-r from-slate-900 via-amber-700 to-orange-300 sm:h-80 lg:h-96">
+						{profile.coverImage ? (
+							// eslint-disable-next-line @next/next/no-img-element
+							<img
+								src={profile.coverImage}
+								alt={`Couverture de ${user.name}`}
+								className="h-full w-full object-cover"
 							/>
-							<AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-						</Avatar>
+						) : null}
+						<div className="absolute inset-0 bg-linear-to-t from-black/45 via-black/10 to-transparent" />
+						{isOwnProfile ? (
+							<div className="absolute bottom-4 right-4 z-10">
+								<ProfileCoverControls hasCover={Boolean(profile.coverImage)} />
+							</div>
+						) : null}
+					</div>
 
-						<div>
-							<h1 className="text-2xl font-bold">{user.name}</h1>
-							{profile.jobTitle && (
-								<p className="text-muted-foreground">
-									{profile.jobTitle}
-									{profile.company && ` chez ${profile.company}`}
-								</p>
-							)}
-							{profile.agencyRole && agency && <p className="text-sm text-muted-foreground mt-1">{profile.agencyRole}</p>}
-						</div>
-
-						{profile.bio && <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed whitespace-pre-wrap">{profile.bio}</p>}
-					</CardContent>
-				</Card>
-
-				{/* Contact / liens publics */}
-				{(profile.websiteUrl || Object.keys(socialLinks).length > 0) && (
-					<Card>
-						<CardContent className="p-6 space-y-3">
-							{profile.websiteUrl && (
-								<a
-									href={profile.websiteUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors"
-								>
-									<Globe className="h-5 w-5 text-muted-foreground" />
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium">Site web</p>
-										<p className="text-xs text-muted-foreground truncate">{profile.websiteUrl}</p>
-									</div>
-								</a>
-							)}
-
-							{Object.entries(socialLinks).map(([platform, url]) => {
-								if (!url) return null;
-								const Icon = SOCIAL_ICONS[platform];
-								const label = SOCIAL_LABELS[platform] || platform;
-								return (
-									<a
-										key={platform}
-										href={url}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors"
-									>
-										{Icon ? (
-											<Icon className="h-5 w-5 text-muted-foreground" />
-										) : (
-											<div className="h-5 w-5 rounded bg-muted-foreground/20 text-xs flex items-center justify-center font-semibold text-muted-foreground">
-												{label.charAt(0)}
-											</div>
-										)}
-										<div className="flex-1 min-w-0">
-											<p className="text-sm font-medium">{label}</p>
-											<p className="text-xs text-muted-foreground truncate">{url}</p>
-										</div>
-									</a>
-								);
-							})}
-						</CardContent>
-					</Card>
-				)}
-
-				{/* Agence */}
-				{agency && agency.approved && (
-					<Card>
-						<CardContent className="p-6">
-							<div className="flex items-start gap-4">
-								{agency.logoUrl ? (
-									// eslint-disable-next-line @next/next/no-img-element
-									<img
-										src={agency.logoUrl}
-										alt={agency.name}
-										className="h-14 w-14 rounded object-cover"
+					<div className="relative px-4 pb-5 sm:px-6 lg:px-8">
+						<div className="-mt-16 flex flex-col gap-4 md:-mt-20 md:flex-row md:items-end md:justify-between">
+							<div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+								<Avatar className="h-32 w-32 border-4 border-white shadow-lg sm:h-40 sm:w-40">
+									<AvatarImage
+										src={user.image}
+										alt={user.name}
 									/>
-								) : (
-									<div className="h-14 w-14 rounded bg-muted flex items-center justify-center">
-										<Building2 className="h-7 w-7 text-muted-foreground" />
-									</div>
-								)}
-								<div className="flex-1">
-									<p className="text-xs uppercase tracking-wider text-muted-foreground">Travaille chez</p>
-									<h3 className="font-semibold">{agency.name}</h3>
-									{(agency.city || agency.province) && (
-										<p className="text-sm text-muted-foreground">{[agency.city, agency.province].filter(Boolean).join(", ")}</p>
-									)}
-									<div className="flex flex-wrap gap-2 mt-2">
-										{agency.iataCode && (
-											<Badge
-												variant="outline"
-												className="text-xs"
-											>
-												IATA · {agency.iataCode}
-											</Badge>
-										)}
-										{agency.tico && (
-											<Badge
-												variant="outline"
-												className="text-xs"
-											>
-												TICO · {agency.tico}
-											</Badge>
-										)}
-										{agency.opc && (
-											<Badge
-												variant="outline"
-												className="text-xs"
-											>
-												OPC · {agency.opc}
-											</Badge>
-										)}
+									<AvatarFallback className="text-4xl">{initials}</AvatarFallback>
+								</Avatar>
+
+								<div className="space-y-1 pt-2 sm:pt-8 mt-14">
+									<h1 className="text-3xl font-bold tracking-tight leading-tight text-foreground sm:text-4xl">{user.name}</h1>
+									{showJobTitle && profile.jobTitle ? (
+										<p className="text-base text-muted-foreground sm:text-lg">
+											{profile.jobTitle}
+											{showCompany && profile.company ? ` chez ${profile.company}` : ""}
+										</p>
+									) : null}
+									<div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+										{memberSince ? (
+											<span className="inline-flex items-center gap-1">
+												<CalendarDays className="h-4 w-4" />
+												Membre depuis {memberSince}
+											</span>
+										) : null}
+										{profile.city || profile.province || profile.country ? (
+											<span className="inline-flex items-center gap-1">
+												<MapPin className="h-4 w-4" />
+												{[profile.city, profile.province, profile.country].filter(Boolean).join(", ")}
+											</span>
+										) : null}
 									</div>
 								</div>
 							</div>
 
-							{agency.description && <p className="text-sm text-muted-foreground mt-4 leading-relaxed whitespace-pre-wrap">{agency.description}</p>}
+							<div className="flex flex-wrap items-center gap-2 md:justify-end">
+								{isOwnProfile ? (
+									<>
+										<Button
+											asChild
+											variant="outline"
+										>
+											<Link href="/profile">Modifier le profil</Link>
+										</Button>
+									</>
+								) : !currentUserId ? (
+									<Button asChild>
+										<Link href={loginCallbackUrl}>Se connecter pour suivre</Link>
+									</Button>
+								) : isFollowing ? (
+									<form action={unfollowUser}>
+										<input
+											type="hidden"
+											name="followingId"
+											value={user.id}
+										/>
+										<input
+											type="hidden"
+											name="username"
+											value={profileUsername}
+										/>
+										<Button
+											type="submit"
+											variant="outline"
+										>
+											Ne plus suivre
+										</Button>
+									</form>
+								) : (
+									<form action={followUser}>
+										<input
+											type="hidden"
+											name="followingId"
+											value={user.id}
+										/>
+										<input
+											type="hidden"
+											name="username"
+											value={profileUsername}
+										/>
+										<Button type="submit">Suivre</Button>
+									</form>
+								)}
+							</div>
+						</div>
 
-							{(agency.phone || agency.email || agency.websiteUrl) && (
-								<div className="mt-4 pt-4 border-t space-y-2 text-sm">
-									{agency.phone && (
+						<div className="mt-5 flex flex-wrap gap-5 border-t pt-4 text-sm text-muted-foreground">
+							{showCommunityStats ? (
+								<>
+									<span className="inline-flex items-center gap-1.5">
+										<PencilLine className="h-4 w-4" /> <strong className="text-foreground">{communityPostsCount}</strong> publications
+									</span>
+									<span className="inline-flex items-center gap-1.5">
+										<MessageSquare className="h-4 w-4" /> <strong className="text-foreground">{communityCommentsCount}</strong> commentaires
+									</span>
+									<span className="inline-flex items-center gap-1.5">
+										<ThumbsUp className="h-4 w-4" /> <strong className="text-foreground">{receivedLikesCount}</strong> j&apos;aime reçus
+									</span>
+								</>
+							) : null}
+							{showFollowStats ? (
+								<>
+									<Link
+										href={`/users/${profileUsername}/followers`}
+										className="inline-flex items-center gap-1.5 hover:text-foreground"
+									>
+										<Users className="h-4 w-4" /> <strong className="text-foreground">{followersCount}</strong> followers
+									</Link>
+									<Link
+										href={`/users/${profileUsername}/following`}
+										className="inline-flex items-center gap-1.5 hover:text-foreground"
+									>
+										<UserPlus className="h-4 w-4" /> <strong className="text-foreground">{followingCount}</strong> abonnements
+									</Link>
+								</>
+							) : null}
+						</div>
+
+						<div className="mt-5 flex flex-wrap gap-2 border-t pt-4">
+							{profileTabs.map((tab) => (
+								<Button
+									key={tab.href}
+									asChild
+									variant="ghost"
+									className="rounded-full"
+								>
+									<Link href={tab.href}>{tab.label}</Link>
+								</Button>
+							))}
+						</div>
+					</div>
+				</section>
+
+				<div className="mt-6 grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+					<div className="space-y-6">
+						<Card>
+							<CardHeader className="pb-3">
+								<CardTitle className="text-base">À propos</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-3 text-sm text-muted-foreground">
+								{showBio && profile.bio ? <p className="whitespace-pre-wrap leading-relaxed text-foreground">{profile.bio}</p> : null}
+								{showJobTitle && profile.jobTitle ? (
+									<p className="inline-flex items-center gap-2">
+										<BriefcaseBusiness className="h-4 w-4" /> {profile.jobTitle}
+										{showCompany && profile.company ? ` chez ${profile.company}` : ""}
+									</p>
+								) : null}
+								{showAgency && profile.agencyRole && agency ? (
+									<p className="inline-flex items-center gap-2">
+										<Building2 className="h-4 w-4" /> {profile.agencyRole}
+									</p>
+								) : null}
+								{memberSince ? (
+									<p className="inline-flex items-center gap-2">
+										<CalendarDays className="h-4 w-4" /> Membre depuis {memberSince}
+									</p>
+								) : null}
+								{!showBio && !showJobTitle && !showAgency && !memberSince ? <p>Aucune information à afficher pour le moment.</p> : null}
+							</CardContent>
+						</Card>
+
+						{hasPrivateContact ? (
+							<Card>
+								<CardHeader className="pb-3">
+									<CardTitle className="text-base">Coordonnées personnelles</CardTitle>
+								</CardHeader>
+								<CardContent className="space-y-3 text-sm text-muted-foreground">
+									{user.email ? (
+										<p className="inline-flex items-center gap-2">
+											<Mail className="h-4 w-4" /> {user.email}
+										</p>
+									) : null}
+									{profile.phone ? (
+										<p className="inline-flex items-center gap-2">
+											<Phone className="h-4 w-4" /> {profile.phone}
+										</p>
+									) : null}
+									{profile.address || profile.city || profile.province || profile.country ? (
+										<p className="flex items-start gap-2">
+											<MapPin className="mt-0.5 h-4 w-4 shrink-0" />{" "}
+											{[profile.address, profile.city, profile.province, profile.country, profile.postalCode].filter(Boolean).join(", ")}
+										</p>
+									) : null}
+								</CardContent>
+							</Card>
+						) : null}
+
+						{hasVisibleLinks ? (
+							<Card>
+								<CardHeader className="pb-3">
+									<CardTitle className="text-base">Liens</CardTitle>
+								</CardHeader>
+								<CardContent className="space-y-3">
+									{showWebsite && profile.websiteUrl ? (
 										<a
-											href={`tel:${agency.phone}`}
-											className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-										>
-											<Phone className="h-4 w-4" />
-											{agency.phone}
-										</a>
-									)}
-									{agency.email && (
-										<a
-											href={`mailto:${agency.email}`}
-											className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-										>
-											<Mail className="h-4 w-4" />
-											{agency.email}
-										</a>
-									)}
-									{agency.websiteUrl && (
-										<a
-											href={agency.websiteUrl}
+											href={profile.websiteUrl}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+											className="flex items-center gap-3 rounded-xl border p-3 text-sm hover:bg-muted/40"
 										>
-											<Globe className="h-4 w-4" />
-											{agency.websiteUrl}
+											<Globe className="h-4 w-4 text-muted-foreground" />
+											<span className="truncate">{profile.websiteUrl}</span>
 										</a>
-									)}
-									{agency.address && (
-										<p className="flex items-start gap-2 text-muted-foreground">
-											<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-											<span>
-												{agency.address}
-												{agency.city && `, ${agency.city}`}
-												{agency.postalCode && `, ${agency.postalCode}`}
-											</span>
-										</p>
-									)}
-								</div>
-							)}
-						</CardContent>
-					</Card>
-				)}
+									) : null}
+									{showSocialLinks
+										? Object.entries(socialLinks).map(([platform, url]) => {
+												if (!url) return null;
+												const Icon = SOCIAL_ICONS[platform];
+												const label = SOCIAL_LABELS[platform] || platform;
+												return (
+													<a
+														key={platform}
+														href={url}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="flex items-center gap-3 rounded-xl border p-3 text-sm hover:bg-muted/40"
+													>
+														{Icon ? <Icon className="h-4 w-4 text-muted-foreground" /> : <Globe className="h-4 w-4 text-muted-foreground" />}
+														<span className="truncate">{label}</span>
+													</a>
+												);
+											})
+										: null}
+								</CardContent>
+							</Card>
+						) : null}
 
-				{/* Footer */}
-				<p className="text-center text-xs text-muted-foreground pt-4">
+						{showAgency && agency && agency.approved ? (
+							<Card>
+								<CardHeader className="pb-3">
+									<CardTitle className="text-base">Agence</CardTitle>
+								</CardHeader>
+								<CardContent className="space-y-4 text-sm">
+									<div className="flex items-start gap-4">
+										{agency.logoUrl ? (
+											// eslint-disable-next-line @next/next/no-img-element
+											<img
+												src={agency.logoUrl}
+												alt={agency.name}
+												className="h-14 w-14 rounded-xl object-cover"
+											/>
+										) : (
+											<div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+												<Building2 className="h-6 w-6 text-muted-foreground" />
+											</div>
+										)}
+										<div>
+											<p className="font-medium text-foreground">{agency.name}</p>
+											{agency.city || agency.province ? (
+												<p className="text-muted-foreground">{[agency.city, agency.province].filter(Boolean).join(", ")}</p>
+											) : null}
+										</div>
+									</div>
+									{agency.description ? <p className="whitespace-pre-wrap text-muted-foreground">{agency.description}</p> : null}
+								</CardContent>
+							</Card>
+						) : null}
+
+						{showCertificates && recentCertificates.length > 0 ? (
+							<Card>
+								<CardHeader className="pb-3">
+									<CardTitle className="text-base">Certificats</CardTitle>
+								</CardHeader>
+								<CardContent className="space-y-3">
+									{recentCertificates.map((certificate) => (
+										<div
+											key={certificate.id}
+											className="rounded-xl border p-3"
+										>
+											<p className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
+												<GraduationCap className="h-4 w-4" /> {certificate.course.title}
+											</p>
+											<p className="mt-1 text-xs text-muted-foreground">{new Date(certificate.issuedAt).toLocaleDateString("fr-CA")}</p>
+										</div>
+									))}
+								</CardContent>
+							</Card>
+						) : null}
+					</div>
+
+					<div className="space-y-6">
+						{isOwnProfile ? (
+							<Card>
+								<CardHeader className="pb-3">
+									<CardTitle className="text-base">Créer une publication</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<CommunityPostComposer
+										user={user}
+										placeholder="Quoi de neuf dans ton activité aujourd'hui ?"
+										submitLabel="Publier"
+										cardStyle="profile"
+									/>
+								</CardContent>
+							</Card>
+						) : null}
+
+						<Card>
+							<CardHeader className="pb-3">
+								<CardTitle className="text-base">Publications</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								{showCommunityPosts ? (
+									recentPosts.length === 0 ? (
+										<p className="text-sm text-muted-foreground">Aucune publication pour le moment.</p>
+									) : (
+										recentPosts.map((post) => (
+											<Link
+												key={post.id}
+												href={`/community?focusPost=${post.id}`}
+												className="block rounded-2xl border bg-background p-4 transition-colors hover:bg-muted/30"
+											>
+												<p className="mb-2 text-xs text-muted-foreground">{formatSocialRelativeTime(post.createdAt)}</p>
+												<p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{post.content}</p>
+												{post.imageUrl ? (
+													<div className="mt-3 overflow-hidden rounded-xl border bg-muted">
+														{/* eslint-disable-next-line @next/next/no-img-element */}
+														<img
+															src={post.imageUrl}
+															alt="Illustration de publication"
+															className="max-h-112 w-full object-cover"
+														/>
+													</div>
+												) : null}
+												<p className="mt-3 text-xs text-muted-foreground">
+													{post._count.likes} j&apos;aime • {post._count.comments} commentaires
+												</p>
+											</Link>
+										))
+									)
+								) : (
+									<p className="text-sm text-muted-foreground">Les publications de ce membre ne sont pas visibles publiquement.</p>
+								)}
+							</CardContent>
+						</Card>
+					</div>
+				</div>
+
+				<p className="pt-6 text-center text-xs text-muted-foreground">
 					Propulsé par{" "}
 					<Link
 						href="/"

@@ -11,6 +11,7 @@ import Logo from "@/components/logo";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarInset, SidebarTrigger, SidebarFooter } from "@/components/ui/sidebar";
 import { adminSidebarNavItems as navItems } from "@/lib/data/navigation";
 import { UserButtonClient } from "../ui/user-button-client";
+import { CommunityNotificationsMenu } from "../ui/community-notifications-menu";
 
 export function AdminSidebar({ user, children }) {
 	const pathname = usePathname();
@@ -27,16 +28,16 @@ export function AdminSidebar({ user, children }) {
 			<Sidebar
 				variant="inset"
 				collapsible="offcanvas"
-				className="border-r border-sidebar-border"
+				className="border-r border-sidebar-border shadow-xl bg-white p-0 m-0"
 			>
-				<SidebarHeader className="flex h-22.5 items-center justify-center border-b border-sidebar-border bg-sidebar/95 backdrop-blur">
+				<SidebarHeader className="flex h-22.5 items-center justify-center border-b border-sidebar-border bg-white">
 					<Logo
 						locale="fr"
 						scrolled
 					/>
 				</SidebarHeader>
-				<SidebarContent className="bg-sidebar/95">
-					<div className="space-y-1 p-3">
+				<SidebarContent className="bg-white">
+					<div className="">
 						{navItems.map((item) => {
 							const isActive = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
 							const Icon = item.icon;
@@ -45,8 +46,8 @@ export function AdminSidebar({ user, children }) {
 									key={item.href}
 									href={item.href}
 									className={cn(
-										"flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
-										isActive ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent",
+										"flex items-center gap-3 px-5 py-5 text-sm transition-all",
+										isActive ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-neutral-200",
 									)}
 								>
 									<Icon className="h-4 w-4" />
@@ -56,16 +57,16 @@ export function AdminSidebar({ user, children }) {
 						})}
 					</div>
 				</SidebarContent>
-				<SidebarFooter className="border-t border-sidebar-border bg-sidebar/95">
+				<SidebarFooter className="border-t border-sidebar-border flex flex-col items-center justify-between gap-2 pt-5 px-0 bg-white">
 					<Badge
 						variant="outline"
-						className="mx-2 mb-1 justify-center"
+						className="mx-2 mb-1 justify-center bg-primary text-white"
 					>
 						Accès administrateur
 					</Badge>
 					<Button
 						variant="ghost"
-						className="w-full justify-start gap-3 px-3"
+						className="flex items-center justify-center gap-2 py-6 hover:bg-neutral-300 rounded-none w-full"
 						onClick={() => signOut({ callbackUrl: "/" })}
 					>
 						<LogOut className="h-4 w-4" />
@@ -74,24 +75,21 @@ export function AdminSidebar({ user, children }) {
 				</SidebarFooter>
 			</Sidebar>
 
-			<SidebarInset>
-				<header className="sticky top-0 z-10 flex h-22.5 items-center border-b border-border/70 bg-background/80 backdrop-blur-xl">
-					<div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 lg:px-6">
+			<SidebarInset className="h-svh overflow-hidden md:m-0 md:rounded-none md:shadow-none">
+				{/* NAVIGATION BAR */}
+				<header className="sticky top-0 z-10 flex h-22.5 items-center border-b border-border/70 bg-white shadow-xl">
+					<div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 lg:px-8">
 						<div className="flex items-center gap-3">
 							<SidebarTrigger />
 							<div>
 								<p className="text-sm font-medium text-muted-foreground">Administration</p>
+
 								<h1 className="text-xl font-semibold">{activeItem.label}</h1>
 							</div>
 						</div>
 						{user && (
-							<div className="flex items-center gap-3">
-								<div className="hidden text-right sm:block mr-2">
-									<div className="hidden text-right sm:block -space-y-0.5">
-										<p className="text-sm font-medium">{user.name}</p>
-										<p className="text-sm font-medium text-muted-foreground">{user.email}</p>
-									</div>
-								</div>
+							<div className="flex items-center gap-4 mr-6">
+								<CommunityNotificationsMenu />
 								<UserButtonClient
 									user={user}
 									size="lg"
@@ -100,7 +98,9 @@ export function AdminSidebar({ user, children }) {
 						)}
 					</div>
 				</header>
-				<main className="dashboard-shell flex-1 overflow-y-auto bg-linear-to-b from-background via-background to-muted/30">{children}</main>
+
+				{/* CONTENT */}
+				<main className="flex-1 overflow-y-auto bg-neutral-100">{children}</main>
 			</SidebarInset>
 		</SidebarProvider>
 	);

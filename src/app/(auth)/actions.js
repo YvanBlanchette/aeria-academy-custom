@@ -3,6 +3,7 @@
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { generateDefaultUsernameForUser } from "@/lib/username";
 
 const registerSchema = z
 	.object({
@@ -42,12 +43,18 @@ export async function registerUser(formData) {
 	}
 
 	const hashed = await bcrypt.hash(password, 10);
+	const username = await generateDefaultUsernameForUser({
+		name,
+		email,
+		id: null,
+	});
 
 	await prisma.user.create({
 		data: {
 			name,
 			email,
 			password: hashed,
+			username,
 			role: "STUDENT",
 		},
 	});

@@ -135,6 +135,7 @@
 	}
 	html {
 		@apply font-sans scroll-smooth;
+		scrollbar-gutter: stable;
 	}
 	img,
 	video {
@@ -175,4 +176,9 @@
 
 .dark .dashboard-shell .bg-white {
 	background-color: var(--card) !important;
+}
+
+/* Keep content width stable inside sidebar layouts when tabs/pages change height. */
+.dashboard-shell {
+	scrollbar-gutter: stable;
 }

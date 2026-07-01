@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
@@ -10,11 +10,8 @@ import { markLessonComplete } from "@/app/learn/[courseId]/actions";
 export function MarkCompleteButton({ courseId, lessonId, isCompleted, nextLessonId }) {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
-	const [completed, setCompleted] = useState(isCompleted);
-
-	useEffect(() => {
-		setCompleted(isCompleted);
-	}, [isCompleted]);
+	const [overrideCompleted, setOverrideCompleted] = useState(null);
+	const completed = overrideCompleted ?? isCompleted;
 
 	async function handleClick() {
 		setLoading(true);
@@ -25,7 +22,7 @@ export function MarkCompleteButton({ courseId, lessonId, isCompleted, nextLesson
 			return;
 		}
 
-		setCompleted(Boolean(result?.completed));
+		setOverrideCompleted(Boolean(result?.completed));
 		toast.success(result?.completed ? "Leçon terminée !" : "Leçon marquée comme non terminée.");
 		setLoading(false);
 

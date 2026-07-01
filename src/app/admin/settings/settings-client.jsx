@@ -489,6 +489,12 @@ export function SettingsClient({ initialSettings, initialAudit, permissions }) {
 							onCheckedChange={(v) => patch({ allowFreePreview: v })}
 						/>
 						<ToggleField
+							label="Activer la communauté membres"
+							hint="Si désactivé, le menu et la page communauté sont masqués pour les membres."
+							checked={settings.enableCommunity}
+							onCheckedChange={(v) => patch({ enableCommunity: v })}
+						/>
+						<ToggleField
 							label="Activer les capsules audio"
 							checked={settings.enableAudioCapsules}
 							onCheckedChange={(v) => patch({ enableAudioCapsules: v })}

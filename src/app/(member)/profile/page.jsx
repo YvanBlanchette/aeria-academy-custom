@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { ensureUserHasUsername } from "@/lib/username";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { AgencySelector } from "@/components/profile/agency-selector";
 
@@ -11,6 +12,7 @@ export const metadata = {
 export default async function ProfilePage() {
 	const session = await auth();
 	if (!session) redirect("/login?callbackUrl=/profile");
+	await ensureUserHasUsername(session.user.id);
 
 	const user = await prisma.user.findUnique({
 		where: { id: session.user.id },

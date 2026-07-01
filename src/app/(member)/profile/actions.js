@@ -8,6 +8,8 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { normalizePublicVisibility } from "@/lib/profile-visibility";
+import { RESERVED_USERNAMES, findAvailableUsername, usernameBaseFromUser, generateDefaultUsernameForUser } from "@/lib/username";
 
 // Helper : valide qu'une chaîne est une URL ou vide
 function urlOrEmpty(message) {
@@ -26,46 +28,6 @@ const usernameSchema = z
 		message: "Ne peut pas commencer ou finir par un tiret",
 	});
 
-const RESERVED_USERNAMES = [
-	"admin",
-	"api",
-	"login",
-	"logout",
-	"register",
-	"signup",
-	"signin",
-	"profile",
-	"courses",
-	"course",
-	"learn",
-	"dashboard",
-	"pricing",
-	"settings",
-	"u",
-	"user",
-	"users",
-	"agencies",
-	"agency",
-	"about",
-	"contact",
-	"help",
-	"support",
-	"terms",
-	"privacy",
-	"legal",
-	"blog",
-	"new",
-	"edit",
-	"delete",
-	"auth",
-	"static",
-	"_next",
-	"favicon",
-	"aeria",
-	"academy",
-	"aeriavoyages",
-];
-
 export async function updateUsername(formData) {
 	const session = await auth();
 	if (!session) return { error: "Non autorisé" };
@@ -74,18 +36,28 @@ export async function updateUsername(formData) {
 		.toLowerCase()
 		.trim();
 
-	// Cas spécial : vider le username (désactiver le profil public)
+	// Cas spécial : si vide, on regénère un username par défaut unique.
 	if (rawUsername === "") {
+		const currentUser = await prisma.user.findUnique({
+			where: { id: session.user.id },
+			select: { id: true, name: true, email: true },
+		});
+
+		if (!currentUser) return { error: "Utilisateur introuvable" };
+
+		const generatedUsername = await generateDefaultUsernameForUser({
+			name: currentUser.name,
+			email: currentUser.email,
+			id: currentUser.id,
+			excludeUserId: currentUser.id,
+		});
+
 		await prisma.user.update({
 			where: { id: session.user.id },
-			data: { username: null },
-		});
-		await prisma.userProfile.update({
-			where: { userId: session.user.id },
-			data: { publicProfile: false },
+			data: { username: generatedUsername },
 		});
 		revalidatePath("/profile");
-		return { success: true, username: null };
+		return { success: true, username: generatedUsername };
 	}
 
 	// Valide le format
@@ -120,23 +92,8 @@ export async function updateUsername(formData) {
 // Suggestion de username à partir du nom (utile pour proposer un default)
 export async function suggestUsername(name) {
 	if (!name) return null;
-	const base = name
-		.toLowerCase()
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "") // retire les accents
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-+|-+$/g, "")
-		.slice(0, 25);
-
-	if (base.length < 3) return null;
-
-	// Vérifie disponibilité avec quelques variantes
-	for (let i = 0; i < 10; i++) {
-		const candidate = i === 0 ? base : `${base}-${i + 1}`;
-		const taken = await prisma.user.findUnique({ where: { username: candidate } });
-		if (!taken) return candidate;
-	}
-	return null;
+	const base = usernameBaseFromUser({ name, email: null, id: null });
+	return findAvailableUsername(base);
 }
 
 const profileSchema = z.object({
@@ -145,6 +102,12 @@ const profileSchema = z.object({
 		.string()
 		.refine((val) => val === "" || val.startsWith("/uploads/") || /^https?:\/\//.test(val), {
 			message: "URL d'image invalide",
+		})
+		.optional(),
+	coverImage: z
+		.string()
+		.refine((val) => val === "" || val.startsWith("/uploads/") || /^https?:\/\//.test(val), {
+			message: "URL d'image de couverture invalide",
 		})
 		.optional(),
 
@@ -171,6 +134,16 @@ const profileSchema = z.object({
 	youtubeUrl: urlOrEmpty("URL YouTube invalide"),
 
 	publicProfile: z.boolean().default(false),
+	showJobTitle: z.boolean().default(true),
+	showCompany: z.boolean().default(true),
+	showBio: z.boolean().default(true),
+	showWebsite: z.boolean().default(true),
+	showSocialLinks: z.boolean().default(true),
+	showAgency: z.boolean().default(true),
+	showCommunityStats: z.boolean().default(true),
+	showCommunityPosts: z.boolean().default(true),
+	showCertificates: z.boolean().default(true),
+	showFollowStats: z.boolean().default(true),
 
 	agencyRole: z.string().max(100).optional().nullable(),
 });
@@ -178,11 +151,13 @@ const profileSchema = z.object({
 export async function updateProfile(formData) {
 	const session = await auth();
 	if (!session) return { error: "Non autorisé" };
+	const hasCoverImageField = formData.has("coverImage");
 
 	// Convertit le FormData en objet
 	const raw = {
 		name: String(formData.get("name") || "").trim(),
 		image: String(formData.get("image") || "").trim(),
+		coverImage: hasCoverImageField ? String(formData.get("coverImage") || "").trim() : undefined,
 		phone: formData.get("phone") || null,
 		address: formData.get("address") || null,
 		city: formData.get("city") || null,
@@ -200,6 +175,16 @@ export async function updateProfile(formData) {
 		twitterUrl: formData.get("twitterUrl") || "",
 		youtubeUrl: formData.get("youtubeUrl") || "",
 		publicProfile: formData.get("publicProfile") === "true",
+		showJobTitle: formData.get("showJobTitle") === "true",
+		showCompany: formData.get("showCompany") === "true",
+		showBio: formData.get("showBio") === "true",
+		showWebsite: formData.get("showWebsite") === "true",
+		showSocialLinks: formData.get("showSocialLinks") === "true",
+		showAgency: formData.get("showAgency") === "true",
+		showCommunityStats: formData.get("showCommunityStats") === "true",
+		showCommunityPosts: formData.get("showCommunityPosts") === "true",
+		showCertificates: formData.get("showCertificates") === "true",
+		showFollowStats: formData.get("showFollowStats") === "true",
 		agencyRole: formData.get("agencyRole") || null,
 	};
 
@@ -209,6 +194,18 @@ export async function updateProfile(formData) {
 	}
 
 	const d = parsed.data;
+	const publicVisibility = normalizePublicVisibility({
+		showJobTitle: d.showJobTitle,
+		showCompany: d.showCompany,
+		showBio: d.showBio,
+		showWebsite: d.showWebsite,
+		showSocialLinks: d.showSocialLinks,
+		showAgency: d.showAgency,
+		showCommunityStats: d.showCommunityStats,
+		showCommunityPosts: d.showCommunityPosts,
+		showCertificates: d.showCertificates,
+		showFollowStats: d.showFollowStats,
+	});
 
 	// Construit l'objet socialLinks
 	const socialLinks = {};
@@ -230,6 +227,7 @@ export async function updateProfile(formData) {
 	await prisma.userProfile.upsert({
 		where: { userId: session.user.id },
 		update: {
+			...(hasCoverImageField ? { coverImage: d.coverImage || null } : {}),
 			phone: d.phone,
 			address: d.address,
 			city: d.city,
@@ -242,10 +240,12 @@ export async function updateProfile(formData) {
 			websiteUrl: d.websiteUrl,
 			socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : null,
 			publicProfile: d.publicProfile,
+			publicVisibility,
 			agencyRole: d.agencyRole,
 		},
 		create: {
 			userId: session.user.id,
+			coverImage: d.coverImage || null,
 			phone: d.phone,
 			address: d.address,
 			city: d.city,
@@ -258,19 +258,68 @@ export async function updateProfile(formData) {
 			websiteUrl: d.websiteUrl,
 			socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : null,
 			publicProfile: d.publicProfile,
+			publicVisibility,
 			agencyRole: d.agencyRole,
 		},
 	});
 
+	const currentUser = await prisma.user.findUnique({
+		where: { id: session.user.id },
+		select: { username: true },
+	});
 	revalidatePath("/profile");
 	revalidatePath("/dashboard");
+	if (currentUser?.username) {
+		revalidatePath(`/users/${currentUser.username}`);
+	}
 	return { success: true };
+}
+
+async function revalidateOwnProfilePaths(userId) {
+	const currentUser = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { username: true },
+	});
+
+	revalidatePath("/profile");
+	revalidatePath("/dashboard");
+	if (currentUser?.username) {
+		revalidatePath(`/users/${currentUser.username}`);
+		revalidatePath(`/users/${currentUser.username}/followers`);
+		revalidatePath(`/users/${currentUser.username}/following`);
+	}
 }
 
 const PROFILE_IMAGE_CONFIG = {
 	allowedMimes: ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"],
 	maxSize: 5 * 1024 * 1024, // 5 MB
 };
+
+async function uploadUserImage({ file, sessionUserId, folder }) {
+	if (!PROFILE_IMAGE_CONFIG.allowedMimes.includes(file.type)) {
+		return { error: `Format invalide. Reçu : ${file.type}` };
+	}
+
+	if (file.size > PROFILE_IMAGE_CONFIG.maxSize) {
+		return { error: "Image trop volumineuse (5 MB max)" };
+	}
+
+	const ext = (path.extname(file.name) || "").toLowerCase();
+	const uploadDir = path.join(process.cwd(), "public", "uploads", "users", folder);
+	if (!existsSync(uploadDir)) {
+		await mkdir(uploadDir, { recursive: true });
+	}
+
+	const filename = `${sessionUserId}-${randomUUID()}${ext}`;
+	const filePath = path.join(uploadDir, filename);
+
+	const bytes = await file.arrayBuffer();
+	await writeFile(filePath, Buffer.from(bytes));
+
+	return {
+		url: `/uploads/users/${folder}/${filename}`,
+	};
+}
 
 export async function uploadProfileImage(formData) {
 	const session = await auth();
@@ -281,29 +330,66 @@ export async function uploadProfileImage(formData) {
 		return { error: "Aucun fichier reçu" };
 	}
 
-	if (!PROFILE_IMAGE_CONFIG.allowedMimes.includes(file.type)) {
-		return { error: `Format invalide. Reçu : ${file.type}` };
+	return uploadUserImage({
+		file,
+		sessionUserId: session.user.id,
+		folder: "avatars",
+	});
+}
+
+export async function uploadProfileCoverImage(formData) {
+	const session = await auth();
+	if (!session) return { error: "Non autorisé" };
+
+	const file = formData.get("file");
+	if (!file || typeof file === "string") {
+		return { error: "Aucun fichier reçu" };
 	}
 
-	if (file.size > PROFILE_IMAGE_CONFIG.maxSize) {
-		return { error: "Image trop volumineuse (5 MB max)" };
+	return uploadUserImage({
+		file,
+		sessionUserId: session.user.id,
+		folder: "covers",
+	});
+}
+
+export async function setProfileCoverImage(formData) {
+	const session = await auth();
+	if (!session) return { error: "Non autorisé" };
+
+	const uploadResult = await uploadProfileCoverImage(formData);
+	if (uploadResult?.error || !uploadResult?.url) {
+		return uploadResult;
 	}
 
-	const ext = (path.extname(file.name) || "").toLowerCase();
-	const uploadDir = path.join(process.cwd(), "public", "uploads", "users", "avatars");
-	if (!existsSync(uploadDir)) {
-		await mkdir(uploadDir, { recursive: true });
-	}
+	await prisma.userProfile.upsert({
+		where: { userId: session.user.id },
+		update: { coverImage: uploadResult.url },
+		create: {
+			userId: session.user.id,
+			coverImage: uploadResult.url,
+		},
+	});
 
-	const filename = `${session.user.id}-${randomUUID()}${ext}`;
-	const filePath = path.join(uploadDir, filename);
+	await revalidateOwnProfilePaths(session.user.id);
+	return { success: true, url: uploadResult.url };
+}
 
-	const bytes = await file.arrayBuffer();
-	await writeFile(filePath, Buffer.from(bytes));
+export async function clearProfileCoverImage() {
+	const session = await auth();
+	if (!session) return { error: "Non autorisé" };
 
-	return {
-		url: `/uploads/users/avatars/${filename}`,
-	};
+	await prisma.userProfile.upsert({
+		where: { userId: session.user.id },
+		update: { coverImage: null },
+		create: {
+			userId: session.user.id,
+			coverImage: null,
+		},
+	});
+
+	await revalidateOwnProfilePaths(session.user.id);
+	return { success: true };
 }
 
 export async function updateAccount(formData) {

@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,7 +14,7 @@ const SIZES = {
 	"4xl": { icon: 160, main: "text-7xl", sub: "text-5xl", gap: "gap-6" },
 };
 
-const Logo = ({ locale, size = "md", scrolled = false, variant }) => {
+const Logo = ({ locale, size = "md", scrolled = false, variant, icon = false }) => {
 	const config = SIZES[size] || SIZES.md;
 
 	// "variant" prend le dessus si explicitement passé (pour les cas Footer, Sheet, etc.)
@@ -33,13 +35,15 @@ const Logo = ({ locale, size = "md", scrolled = false, variant }) => {
 				className="object-contain transition-opacity duration-300"
 				priority
 			/>
-			<div className="flex flex-col transition-colors duration-300">
-				<p className={`font-display ${config.main} font-semibold tracking-widest -mb-0.5 uppercase ${textColor}`}>ÆRIA Voyages</p>
-				<span className="h-[0.5px] w-full bg-[#9a6f14]" />
-				<p className={`font-display ${config.sub} tracking-widest uppercase -mt-0.5 font-medium opacity-80 ${textColor}`}>
-					{locale === "fr" ? "Académie" : "Academy"}
-				</p>
-			</div>
+			{!icon && (
+				<div className="flex flex-col transition-colors duration-300">
+					<p className={`font-display ${config.main} font-semibold tracking-widest -mb-0.5 uppercase ${textColor}`}>ÆRIA Voyages</p>
+					<span className="h-[0.5px] w-full bg-[#9a6f14]" />
+					<p className={`font-display ${config.sub} tracking-widest uppercase -mt-0.5 font-medium opacity-80 ${textColor}`}>
+						{locale === "fr" ? "Académie" : "Academy"}
+					</p>
+				</div>
+			)}
 		</Link>
 	);
 };

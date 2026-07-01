@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { Check, Monitor, Moon, Sun } from "lucide-react";
-import { useTheme } from "@/components/theme-provider";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,15 +10,29 @@ import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
-	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
+	DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
-export function UserButtonClient({ user, size }) {
-	const { theme, setTheme } = useTheme();
+export function UserButtonClient({ user: userProp, size }) {
+	const { user: sessionUser, isSignedIn } = useCurrentUser();
+	const user =
+		userProp ||
+		(isSignedIn
+			? {
+					id: sessionUser?.id,
+					name: sessionUser?.fullName,
+					email: sessionUser?.email,
+					image: sessionUser?.imageUrl,
+					role: sessionUser?.role,
+				}
+			: null);
+
 	const avatar = user?.image || "/images/avatar-placeholder.png";
-	const dashboardURL = user?.role === "ADMIN" ? "/admin" : "/dashboard";
+	const dashboardURL = "/dashboard";
+	const profileSlug = user?.username || user?.id;
+	const profileURL = profileSlug ? `/users/${profileSlug}` : "/profile";
 
 	const userInitials = user?.name
 		? user.name
@@ -35,7 +48,7 @@ export function UserButtonClient({ user, size }) {
 	}
 
 	return (
-		<DropdownMenu>
+		<DropdownMenu modal={false}>
 			<DropdownMenuTrigger asChild>
 				<Button
 					variant="ghost"
@@ -55,32 +68,24 @@ export function UserButtonClient({ user, size }) {
 				className="w-44"
 				align="end"
 			>
-				<DropdownMenuLabel>Apparence</DropdownMenuLabel>
 				<DropdownMenuGroup>
-					<DropdownMenuItem onClick={() => setTheme("light")}>
-						<Sun className="mr-2 h-4 w-4" />
-						<span>Clair</span>
-						{theme === "light" ? <Check className="ml-auto h-4 w-4" /> : null}
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => setTheme("dark")}>
-						<Moon className="mr-2 h-4 w-4" />
-						<span>Sombre</span>
-						{theme === "dark" ? <Check className="ml-auto h-4 w-4" /> : null}
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => setTheme("system")}>
-						<Monitor className="mr-2 h-4 w-4" />
-						<span>Système</span>
-						{theme === "system" ? <Check className="ml-auto h-4 w-4" /> : null}
-					</DropdownMenuItem>
-				</DropdownMenuGroup>
-				<DropdownMenuSeparator />
-				<DropdownMenuGroup>
+					<DropdownMenuLabel asChild>
+						<div className="space-y-1 text-center cursor-default pb-2 border-b border-sidebar-border">
+							<p className="text-xs font-medium leading-none">{user?.name}</p>
+							<p className="text-[10px] leading-none text-muted-foreground">{user?.email}</p>
+						</div>
+					</DropdownMenuLabel>
 					<DropdownMenuItem asChild>
-						<Link href="/profile">Profil</Link>
+						<Link href={profileURL}>Profil</Link>
 					</DropdownMenuItem>
 					<DropdownMenuItem asChild>
 						<Link href={dashboardURL}>Tableau de bord</Link>
 					</DropdownMenuItem>
+					{user?.role === "ADMIN" && (
+						<DropdownMenuItem asChild>
+							<Link href="/admin">Administration</Link>
+						</DropdownMenuItem>
+					)}
 					{user?.role === "ADMIN" && (
 						<DropdownMenuItem asChild>
 							<Link href="/admin/settings">Paramètres</Link>

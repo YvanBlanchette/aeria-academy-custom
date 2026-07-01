@@ -14,10 +14,19 @@ export function TagsManager({ tags }) {
 	const router = useRouter();
 	const [creating, setCreating] = useState(false);
 	const [newName, setNewName] = useState("");
+	const [pathInput, setPathInput] = useState("");
 	const [newColor, setNewColor] = useState("#6366f1");
 	const [editingId, setEditingId] = useState(null);
 	const [editName, setEditName] = useState("");
 	const [editColor, setEditColor] = useState("");
+
+	function normalizePath(raw) {
+		return raw
+			.split(/[>/]/)
+			.map((part) => part.trim())
+			.filter(Boolean)
+			.join(" / ");
+	}
 
 	async function handleCreate(e) {
 		e.preventDefault();
@@ -33,6 +42,7 @@ export function TagsManager({ tags }) {
 		}
 		toast.success("Tag créé");
 		setNewName("");
+		setPathInput("");
 		router.refresh();
 	}
 
@@ -74,28 +84,49 @@ export function TagsManager({ tags }) {
 				<CardContent className="p-6">
 					<form
 						onSubmit={handleCreate}
-						className="flex gap-2"
+						className="space-y-3"
 					>
-						<Input
-							value={newName}
-							onChange={(e) => setNewName(e.target.value)}
-							placeholder="Nom du tag (ex: Croisières)"
-							required
-						/>
-						<input
-							type="color"
-							value={newColor}
-							onChange={(e) => setNewColor(e.target.value)}
-							className="h-10 w-16 rounded border cursor-pointer"
-							title="Couleur du badge"
-						/>
-						<Button
-							type="submit"
-							disabled={creating}
-						>
-							<Plus className="mr-1 h-4 w-4" />
-							Créer
-						</Button>
+						<div className="rounded-md border bg-muted/20 p-3 space-y-2">
+							<p className="text-xs font-medium text-muted-foreground">Assistant de chemin hiérarchique</p>
+							<div className="flex gap-2">
+								<Input
+									value={pathInput}
+									onChange={(e) => setPathInput(e.target.value)}
+									placeholder="Destinations > Europe > Ecosse > Edimbourg"
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => setNewName(normalizePath(pathInput))}
+								>
+									Utiliser
+								</Button>
+							</div>
+							<p className="text-xs text-muted-foreground">Tu peux utiliser &gt; ou /. Le format final sera: Parent / Enfant / Sous-enfant.</p>
+						</div>
+
+						<div className="flex gap-2">
+							<Input
+								value={newName}
+								onChange={(e) => setNewName(e.target.value)}
+								placeholder="Nom du tag (ex: Croisieres / Premium)"
+								required
+							/>
+							<input
+								type="color"
+								value={newColor}
+								onChange={(e) => setNewColor(e.target.value)}
+								className="h-10 w-16 rounded border cursor-pointer"
+								title="Couleur du badge"
+							/>
+							<Button
+								type="submit"
+								disabled={creating}
+							>
+								<Plus className="mr-1 h-4 w-4" />
+								Créer
+							</Button>
+						</div>
 					</form>
 				</CardContent>
 			</Card>

@@ -3,86 +3,34 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { BookText, Code2, Columns3, Eye, EyeOff, Focus, Hash, List, Minimize2, Redo2, Sparkles, Undo2, Wand2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { ImageUpload } from "@/components/ui/image-upload";
-import { uploadArticleMedia } from "@/app/admin/articles/upload-actions";
-import { createArticle, updateArticle } from "@/app/admin/articles/actions";
-import { ArticleContent } from "@/components/articles/article-content";
+import { Sparkles } from "lucide-react";
 import clsx from "clsx";
+import { Button } from "@/components/ui/button";
+import { createArticle, updateArticle } from "@/app/admin/articles/actions";
+import { uploadArticleMedia } from "@/app/admin/articles/upload-actions";
 import { slugify } from "@/lib/slugify";
-
-const NEW_ARTICLE_DRAFT_KEY = "admin-article-new-draft-v1";
-const HISTORY_LIMIT = 80;
-
-const SLASH_COMMANDS = {
-	"/h2": "\n## Nouveau sous-titre\n\n",
-	"/h3": "\n### Nouveau titre niveau 3\n\n",
-	"/list": "\n- Point 1\n- Point 2\n- Point 3\n",
-	"/code": "\n```md\nVotre code ici\n```\n",
-	"/callout": '\n::callout[Information importante]{type="info"}\n',
-	"/quote": '\n::quote[Citation]{author="Auteur"}\n',
-	"/video": "\n::video[https://youtube.com/watch?v=ID]\n",
-};
-
-function readDraftFromStorage() {
-	if (typeof window === "undefined") return null;
-	const raw = window.localStorage.getItem(NEW_ARTICLE_DRAFT_KEY);
-	if (!raw) return null;
-	try {
-		const parsed = JSON.parse(raw);
-		if (!parsed || typeof parsed !== "object") return null;
-		return parsed;
-	} catch {
-		window.localStorage.removeItem(NEW_ARTICLE_DRAFT_KEY);
-		return null;
-	}
-}
-
-const ARTICLE_TEMPLATES = {
-	guide: {
-		label: "Guide pratique",
-		title: "Guide: ",
-		excerpt: "Guide rapide pour aider vos lecteurs a appliquer une methode claire.",
-		content:
-			"## Contexte\n\nExpliquez le probleme ou l'objectif en 3-4 phrases.\n\n## Etapes\n\n1. Etape 1\n2. Etape 2\n3. Etape 3\n\n## Points de vigilance\n\n::callout[Attention aux erreurs frequentes]{type=\"warning\"}\n\n## Conclusion\n\nResumer l'essentiel et proposer la prochaine action.",
-		requiredTier: "FREE",
-	},
-	news: {
-		label: "Annonce / actualite",
-		title: "Annonce: ",
-		excerpt: "Nouveaute importante a communiquer a la communaute.",
-		content:
-			"## Ce qui change\n\nDetaillez la nouveaute en termes simples.\n\n## Pourquoi c'est important\n\n- Benefice 1\n- Benefice 2\n\n## Date d'entree en vigueur\n\nPrecisez la date et les impacts.",
-		requiredTier: "FREE",
-	},
-	caseStudy: {
-		label: "Etude de cas",
-		title: "Etude de cas: ",
-		excerpt: "Retour d'experience detaille avec resultats concrets.",
-		content:
-			"## Situation initiale\n\nContexte client / equipe.\n\n## Strategie appliquee\n\nExpliquez les decisions prises.\n\n## Resultats\n\n- KPI 1\n- KPI 2\n\n## Lecons retenues\n\nCe qu'on reproduit, ce qu'on evite.",
-		requiredTier: "ACADEMY",
-	},
-};
+import { ARTICLE_TEMPLATES, HISTORY_LIMIT, NEW_ARTICLE_DRAFT_KEY, SLASH_COMMANDS } from "@/components/admin/article-form.constants";
+import { extractPrimaryCategory, injectPrimaryCategoryMarker, readDraftFromStorage, stripPrimaryCategoryMarker } from "@/components/admin/article-form.utils";
+import { ArticleFormEditorSection } from "@/components/admin/article-form-editor-section";
+import { ArticleFormMetadataSection } from "@/components/admin/article-form-metadata-section";
+import { ArticleFormPublicationSection } from "@/components/admin/article-form-publication-section";
+import { ArticleFormSidebarSection } from "@/components/admin/article-form-sidebar-section";
 
 export function ArticleForm({ article, allTags = [] }) {
 	const router = useRouter();
 	const isEdit = !!article;
-	const initialDraft = !isEdit ? readDraftFromStorage() : null;
+	const initialDraft = !isEdit ? readDraftFromStorage(NEW_ARTICLE_DRAFT_KEY) : null;
+	const initialRawContent = article?.content || initialDraft?.content || "";
+	const initialPrimaryCategory = initialDraft?.primaryCategoryPath || extractPrimaryCategory(initialRawContent);
+	const initialContent = stripPrimaryCategoryMarker(initialRawContent);
 
 	const [loading, setLoading] = useState(false);
 	const [title, setTitle] = useState(article?.title || initialDraft?.title || "");
 	const [slug, setSlug] = useState(article?.slug || initialDraft?.slug || "");
 	const [excerpt, setExcerpt] = useState(article?.excerpt || initialDraft?.excerpt || "");
 	const [coverImage, setCoverImage] = useState(article?.coverImage || initialDraft?.coverImage || "");
-	const [content, setContent] = useState(article?.content || initialDraft?.content || "");
+	const [content, setContent] = useState(initialContent);
+	const [primaryCategoryPath, setPrimaryCategoryPath] = useState(initialPrimaryCategory);
 	const [requiredTier, setRequiredTier] = useState(article?.requiredTier || initialDraft?.requiredTier || "FREE");
 	const [selectedTagIds, setSelectedTagIds] = useState(article?.tags?.map((t) => t.tagId) || initialDraft?.selectedTagIds || []);
 	const [viewMode, setViewMode] = useState("editor");
@@ -91,6 +39,16 @@ export function ArticleForm({ article, allTags = [] }) {
 	const [lastSavedAt, setLastSavedAt] = useState(null);
 	const [templateKey, setTemplateKey] = useState("guide");
 	const [isFocusMode, setIsFocusMode] = useState(false);
+	const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
+	const [showQuickToolbar, setShowQuickToolbar] = useState(true);
+	const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+	const [hasTextSelection, setHasTextSelection] = useState(false);
+	const [rightPanelSections, setRightPanelSections] = useState({
+		templates: true,
+		seo: true,
+		quality: true,
+		checklist: true,
+	});
 	const [historyPast, setHistoryPast] = useState(Array.isArray(initialDraft?.historyPast) ? initialDraft.historyPast.slice(-HISTORY_LIMIT) : []);
 	const [historyFuture, setHistoryFuture] = useState(Array.isArray(initialDraft?.historyFuture) ? initialDraft.historyFuture.slice(0, HISTORY_LIMIT) : []);
 	const [slashInput, setSlashInput] = useState("");
@@ -98,6 +56,13 @@ export function ArticleForm({ article, allTags = [] }) {
 
 	const textareaRef = useRef(null);
 	const checkpointRef = useRef(content);
+	const selectedTagObjects = allTags.filter((tag) => selectedTagIds.includes(tag.id));
+	const hierarchicalTagNames = selectedTagObjects
+		.map((tag) => tag.name)
+		.filter((name) => name.includes("/"))
+		.sort((a, b) => b.split("/").length - a.split("/").length);
+	const effectivePrimaryCategoryPath =
+		hierarchicalTagNames.length === 0 ? "" : hierarchicalTagNames.includes(primaryCategoryPath) ? primaryCategoryPath : hierarchicalTagNames[0];
 
 	function buildFormDataPayload() {
 		const formData = new FormData();
@@ -105,7 +70,7 @@ export function ArticleForm({ article, allTags = [] }) {
 		formData.set("slug", slug);
 		formData.set("excerpt", excerpt);
 		formData.set("coverImage", coverImage);
-		formData.set("content", content);
+		formData.set("content", injectPrimaryCategoryMarker(content, effectivePrimaryCategoryPath));
 		formData.set("requiredTier", requiredTier);
 		formData.set("tagIds", selectedTagIds.join(","));
 		return formData;
@@ -152,6 +117,7 @@ export function ArticleForm({ article, allTags = [] }) {
 						excerpt,
 						coverImage,
 						content,
+						primaryCategoryPath: effectivePrimaryCategoryPath,
 						requiredTier,
 						selectedTagIds,
 						historyPast,
@@ -169,7 +135,7 @@ export function ArticleForm({ article, allTags = [] }) {
 			formData.set("slug", slug);
 			formData.set("excerpt", excerpt);
 			formData.set("coverImage", coverImage);
-			formData.set("content", content);
+			formData.set("content", injectPrimaryCategoryMarker(content, effectivePrimaryCategoryPath));
 			formData.set("requiredTier", requiredTier);
 			formData.set("tagIds", selectedTagIds.join(","));
 			const result = await updateArticle(article.id, formData);
@@ -182,14 +148,27 @@ export function ArticleForm({ article, allTags = [] }) {
 
 		const timer = window.setTimeout(save, 6000);
 		return () => window.clearTimeout(timer);
-	}, [article?.id, content, coverImage, excerpt, historyFuture, historyPast, isDirty, isEdit, requiredTier, selectedTagIds, slug, title]);
+	}, [
+		article?.id,
+		content,
+		coverImage,
+		effectivePrimaryCategoryPath,
+		excerpt,
+		historyFuture,
+		historyPast,
+		isDirty,
+		isEdit,
+		requiredTier,
+		selectedTagIds,
+		slug,
+		title,
+	]);
 
 	function toggleTag(tagId) {
 		setIsDirty(true);
 		setSelectedTagIds((prev) => (prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]));
 	}
 
-	// Helper : insère du texte à la position du curseur
 	function insertAtCursor(text) {
 		const ta = textareaRef.current;
 		if (!ta) return;
@@ -200,7 +179,6 @@ export function ArticleForm({ article, allTags = [] }) {
 		const newContent = content.slice(0, start) + text + content.slice(end);
 		setIsDirty(true);
 		setContent(newContent);
-		// Restore le focus + curseur après le texte inséré
 		setTimeout(() => {
 			ta.focus();
 			ta.setSelectionRange(start + text.length, start + text.length);
@@ -212,17 +190,45 @@ export function ArticleForm({ article, allTags = [] }) {
 		if (!ta) return;
 		const start = ta.selectionStart;
 		const end = ta.selectionEnd;
+		const before = content.slice(0, start);
+		const selectedRaw = content.slice(start, end);
+		const after = content.slice(end);
+
+		let next = content;
+		let nextSelectionStart = start;
+		let nextSelectionEnd = end;
+
+		const hasSelection = end > start;
+		const isWrappedSelection =
+			hasSelection && selectedRaw.startsWith(prefix) && selectedRaw.endsWith(suffix) && selectedRaw.length >= prefix.length + suffix.length;
+		const hasOuterWrapper =
+			hasSelection && start >= prefix.length && content.slice(start - prefix.length, start) === prefix && content.slice(end, end + suffix.length) === suffix;
+
 		setHistoryPast((prev) => [...prev.slice(-(HISTORY_LIMIT - 1)), content]);
 		setHistoryFuture([]);
-		const selected = content.slice(start, end) || "texte";
-		const wrapped = `${prefix}${selected}${suffix}`;
-		const next = content.slice(0, start) + wrapped + content.slice(end);
+
+		if (isWrappedSelection) {
+			const unwrapped = selectedRaw.slice(prefix.length, selectedRaw.length - suffix.length);
+			next = before + unwrapped + after;
+			nextSelectionStart = start;
+			nextSelectionEnd = start + unwrapped.length;
+		} else if (hasOuterWrapper) {
+			next = content.slice(0, start - prefix.length) + selectedRaw + content.slice(end + suffix.length);
+			nextSelectionStart = start - prefix.length;
+			nextSelectionEnd = nextSelectionStart + selectedRaw.length;
+		} else {
+			const selected = selectedRaw || "texte";
+			const wrapped = `${prefix}${selected}${suffix}`;
+			next = before + wrapped + after;
+			nextSelectionStart = start + prefix.length;
+			nextSelectionEnd = nextSelectionStart + selected.length;
+		}
+
 		setIsDirty(true);
 		setContent(next);
 		setTimeout(() => {
 			ta.focus();
-			const cursorPos = start + wrapped.length;
-			ta.setSelectionRange(cursorPos, cursorPos);
+			ta.setSelectionRange(nextSelectionStart, nextSelectionEnd);
 		}, 0);
 	}
 
@@ -323,20 +329,7 @@ export function ArticleForm({ article, allTags = [] }) {
 
 		if (key === "k") {
 			e.preventDefault();
-			const ta = textareaRef.current;
-			if (!ta) return;
-			const start = ta.selectionStart;
-			const end = ta.selectionEnd;
-			const selected = content.slice(start, end) || "texte";
-			const markdownLink = `[${selected}](https://)`;
-			const next = content.slice(0, start) + markdownLink + content.slice(end);
-			setIsDirty(true);
-			setContent(next);
-			setTimeout(() => {
-				ta.focus();
-				const urlStart = start + markdownLink.lastIndexOf("https://");
-				ta.setSelectionRange(urlStart, urlStart + "https://".length);
-			}, 0);
+			insertMarkdownLink();
 			return;
 		}
 
@@ -374,6 +367,22 @@ export function ArticleForm({ article, allTags = [] }) {
 		insertAtCursor(snippets[kind] || "");
 	}
 
+	function insertMarkdownLink() {
+		const ta = textareaRef.current;
+		if (!ta) return;
+		const start = ta.selectionStart;
+		const end = ta.selectionEnd;
+		const selected = content.slice(start, end) || "texte";
+		const markdownLink = `[${selected}](https://)`;
+		setIsDirty(true);
+		setContent(content.slice(0, start) + markdownLink + content.slice(end));
+		setTimeout(() => {
+			ta.focus();
+			const urlStart = start + markdownLink.lastIndexOf("https://");
+			ta.setSelectionRange(urlStart, urlStart + "https://".length);
+		}, 0);
+	}
+
 	function generateSlugFromTitle() {
 		const generated = slugify(title || "");
 		if (!generated) {
@@ -407,7 +416,6 @@ export function ArticleForm({ article, allTags = [] }) {
 
 			toast.success("Média uploadé");
 
-			// Insère la directive markdown correspondante
 			const directive =
 				kind === "image"
 					? `\n::image[${result.url}]{caption=""}\n`
@@ -424,7 +432,6 @@ export function ArticleForm({ article, allTags = [] }) {
 		setLoading(true);
 
 		const formData = buildFormDataPayload();
-
 		const result = isEdit ? await updateArticle(article.id, formData) : await createArticle(formData);
 
 		if (result?.error) {
@@ -443,6 +450,7 @@ export function ArticleForm({ article, allTags = [] }) {
 			setHistoryFuture([]);
 			setIsDirty(false);
 		}
+
 		setLoading(false);
 	}
 
@@ -468,424 +476,183 @@ export function ArticleForm({ article, allTags = [] }) {
 	const saveLabel = isEdit ? "Mettre à jour" : "Créer l'article";
 	const titleSeoState = title.length >= 45 && title.length <= 65 ? "optimal" : title.length >= 30 && title.length <= 80 ? "ok" : "weak";
 	const excerptSeoState = excerpt.length >= 120 && excerpt.length <= 160 ? "optimal" : excerpt.length >= 80 && excerpt.length <= 220 ? "ok" : "weak";
+	const commandQueryHint = "Ctrl+K";
+
+	function toggleRightPanelSection(sectionKey) {
+		setRightPanelSections((prev) => ({
+			...prev,
+			[sectionKey]: !prev[sectionKey],
+		}));
+	}
+
+	function syncSelectionState() {
+		const ta = textareaRef.current;
+		if (!ta || viewMode === "preview") {
+			setHasTextSelection(false);
+			return;
+		}
+		setHasTextSelection(ta.selectionEnd > ta.selectionStart);
+	}
+
+	function submitEditorForm() {
+		const form = document.querySelector("form");
+		if (form) form.requestSubmit();
+	}
+
+	function saveDraftNow() {
+		if (!isEdit) {
+			toast.info("Le brouillon sera cree au premier enregistrement");
+			return;
+		}
+		submitEditorForm();
+	}
+
+	async function copyMarkdownToClipboard() {
+		if (!navigator?.clipboard) {
+			toast.error("Copie presse-papiers non disponible");
+			return;
+		}
+		try {
+			await navigator.clipboard.writeText(content);
+			toast.success("Markdown copie");
+		} catch {
+			toast.error("Impossible de copier le markdown");
+		}
+	}
+
+	useEffect(() => {
+		function onGlobalKeyDown(event) {
+			if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+				event.preventDefault();
+				setIsCommandPaletteOpen(true);
+				return;
+			}
+
+			if (event.key === "Escape" && isCommandPaletteOpen) {
+				setIsCommandPaletteOpen(false);
+			}
+		}
+
+		window.addEventListener("keydown", onGlobalKeyDown);
+		return () => window.removeEventListener("keydown", onGlobalKeyDown);
+	}, [isCommandPaletteOpen]);
 
 	return (
-		<div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+		<div className={clsx("grid gap-6", isRightPanelOpen && !isFocusMode ? "xl:grid-cols-[1fr_320px]" : "xl:grid-cols-1")}>
 			<form
 				onSubmit={handleSubmit}
 				className="space-y-6"
 			>
-				{/* Card 1 : Métadonnées */}
-				<Card>
-					<CardHeader>
-						<CardTitle>Informations de base</CardTitle>
-						<CardDescription>Titre, résumé, image de couverture</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="title">Titre *</Label>
-							<Input
-								id="title"
-								value={title}
-								onChange={(e) => {
-									setIsDirty(true);
-									setTitle(e.target.value);
-								}}
-								placeholder="Le titre de ton article"
-								required
-								className="bg-neutral-50 shadow-inner"
-							/>
-						</div>
+				<ArticleFormMetadataSection
+					title={title}
+					onTitleChange={(e) => {
+						setIsDirty(true);
+						setTitle(e.target.value);
+					}}
+					slug={slug}
+					onSlugChange={(e) => {
+						setIsDirty(true);
+						setSlug(e.target.value);
+					}}
+					slugPreview={slugPreview}
+					onGenerateSlug={generateSlugFromTitle}
+					excerpt={excerpt}
+					onExcerptChange={(e) => {
+						setIsDirty(true);
+						setExcerpt(e.target.value);
+					}}
+					coverImage={coverImage}
+					onCoverImageChange={(v) => {
+						setIsDirty(true);
+						setCoverImage(v);
+					}}
+				/>
 
-						<div className="space-y-2">
-							<div className="flex items-center justify-between">
-								<Label htmlFor="slug">Slug (URL)</Label>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={generateSlugFromTitle}
-								>
-									<Wand2 className="mr-1 h-3.5 w-3.5" />
-									Générer depuis le titre
-								</Button>
-							</div>
-							<Input
-								id="slug"
-								value={slug}
-								onChange={(e) => {
-									setIsDirty(true);
-									setSlug(e.target.value);
-								}}
-								placeholder="mon-super-article"
-								className="bg-neutral-50 shadow-inner"
-							/>
-							<p className="text-xs text-muted-foreground">Aperçu: /resources/{slugPreview || "..."}</p>
-						</div>
+				<ArticleFormEditorSection
+					isFocusMode={isFocusMode}
+					onToggleFocusMode={() => setIsFocusMode((v) => !v)}
+					viewMode={viewMode}
+					onViewModeChange={setViewMode}
+					onUndo={handleUndo}
+					onRedo={handleRedo}
+					canUndo={historyPast.length > 0}
+					canRedo={historyFuture.length > 0}
+					onSaveDraft={saveDraftNow}
+					onSubmitForm={submitEditorForm}
+					onQuitEditor={() => router.push("/admin/articles")}
+					onWrapBold={() => wrapSelection("**")}
+					onWrapItalic={() => wrapSelection("*")}
+					onWrapUnderline={() => wrapSelection("<u>", "</u>")}
+					onInsertMarkdownLink={insertMarkdownLink}
+					onMediaUpload={handleMediaUpload}
+					onInsertYouTube={() => insertAtCursor("\n::video[https://youtube.com/watch?v=ID]\n")}
+					onAddTable={() => addSnippet("table")}
+					onAddChecklist={() => addSnippet("checklist")}
+					onInsertCodeBlock={() => insertAtCursor("\n```md\nVotre code ici\n```\n")}
+					onAddSeparator={() => addSnippet("separator")}
+					onInsertH2={() => insertAtCursor("\n## Sous-titre\n\n")}
+					onInsertH3={() => insertAtCursor("\n### Sous-section\n\n")}
+					onInsertBulletList={() => insertAtCursor("\n- Point 1\n- Point 2\n")}
+					onInsertNumberedList={() => insertAtCursor("\n1. Etape 1\n2. Etape 2\n")}
+					onInsertQuote={() => insertAtCursor('\n::quote[Citation]{author="Auteur"}\n')}
+					onGenerateSlug={generateSlugFromTitle}
+					onApplyTemplate={applyTemplate}
+					onCopyMarkdown={copyMarkdownToClipboard}
+					onShowStats={() => toast.message(`${wordCount} mots · ${readingMinutes} min de lecture`)}
+					onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+					showQuickToolbar={showQuickToolbar}
+					onToggleQuickToolbar={() => setShowQuickToolbar((v) => !v)}
 
-						<div className="space-y-2">
-							<Label htmlFor="excerpt">Résumé (optionnel)</Label>
-							<Textarea
-								id="excerpt"
-								value={excerpt}
-								onChange={(e) => {
-									setIsDirty(true);
-									setExcerpt(e.target.value);
-								}}
-								placeholder="Court résumé affiché dans les listes. Si vide, généré automatiquement."
-								rows={2}
-								className="bg-neutral-50 shadow-inner"
-							/>
-							<p className="text-xs text-muted-foreground">{excerpt.length}/500 caractères</p>
-						</div>
+					isRightPanelOpen={isRightPanelOpen}
+					onToggleRightPanel={() => setIsRightPanelOpen((v) => !v)}
+					rightPanelSections={rightPanelSections}
+					onToggleRightPanelSection={toggleRightPanelSection}
+					commandQueryHint={commandQueryHint}
+					hasTextSelection={hasTextSelection}
+					onSyncSelectionState={syncSelectionState}
+					textareaRef={textareaRef}
+					content={content}
+					onContentChange={(value) => {
+						setIsDirty(true);
+						setContent(value);
+					}}
+					onEditorKeyDown={handleEditorKeyDown}
+					slashInput={slashInput}
+					onSlashInputChange={setSlashInput}
+					onApplySlashCommand={() => {
+						if (!slashInput.trim()) return;
+						const ok = applySlashCommand(slashInput.trim().split(/\s+/)[0]);
+						if (!ok) toast.error("Commande slash inconnue");
+					}}
+					commandHint={commandHint}
+					wordCount={wordCount}
+					readingMinutes={readingMinutes}
+					isCommandPaletteOpen={isCommandPaletteOpen}
+					onCommandPaletteOpenChange={setIsCommandPaletteOpen}
+				/>
 
-						<div className="space-y-2">
-							<Label>Image de couverture</Label>
-							<ImageUpload
-								value={coverImage}
-								onChange={(v) => {
-									setIsDirty(true);
-									setCoverImage(v);
-								}}
-								name="coverImage"
-								className="bg-neutral-50 shadow-inner"
-							/>
-						</div>
-					</CardContent>
-				</Card>
-
-				{/* Card 2 : Contenu markdown */}
-				<Card className={clsx(isFocusMode && "fixed inset-4 z-50 overflow-auto bg-neutral-100 shadow-xl")}>
-					<CardHeader>
-						<div className="flex items-center justify-between">
-							<div>
-								<CardTitle>Contenu</CardTitle>
-								<CardDescription>Markdown enrichi (Ctrl+B, Ctrl+I, Ctrl+K, Alt+2, Alt+3, Shift+8, Shift+C, Ctrl+Z/Y)</CardDescription>
-							</div>
-							<div className="flex gap-2">
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={handleUndo}
-									disabled={historyPast.length === 0}
-									className="shadow-sm bg-white hover:bg-neutral-50"
-								>
-									<Undo2 className="mr-1 h-4 w-4" />
-									Undo
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={handleRedo}
-									disabled={historyFuture.length === 0}
-									className="shadow-sm bg-white hover:bg-neutral-50"
-								>
-									<Redo2 className="mr-1 h-4 w-4" />
-									Redo
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => setViewMode("editor")}
-									className={clsx(
-										"text-neutral-900 active:shadow-inner active:bg-neutral-200",
-										viewMode === "editor" ? "shadow-inner bg-neutral-200 hover:bg-neutral-200" : "shadow-sm bg-white hover:bg-neutral-50",
-									)}
-								>
-									<EyeOff className="mr-1 h-4 w-4" />
-									Editeur
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => setViewMode("preview")}
-									className={clsx(
-										"text-neutral-900 active:shadow-inner active:bg-neutral-200",
-										viewMode === "preview" ? "shadow-inner bg-neutral-200 hover:bg-neutral-200" : "shadow-sm bg-white hover:bg-neutral-50",
-									)}
-								>
-									<Eye className="mr-1 h-4 w-4" />
-									Apercu
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => setViewMode("split")}
-									className={clsx(
-										"text-neutral-900 active:shadow-inner active:bg-neutral-200",
-										viewMode === "split" ? "shadow-inner bg-neutral-200 hover:bg-neutral-200" : "shadow-sm bg-white hover:bg-neutral-50",
-									)}
-								>
-									<Columns3 className="mr-1 h-4 w-4" />
-									Split
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => setIsFocusMode((v) => !v)}
-									className="shadow-sm bg-white hover:bg-neutral-50"
-								>
-									{isFocusMode ? <Minimize2 className="mr-1 h-4 w-4" /> : <Focus className="mr-1 h-4 w-4" />}
-									{isFocusMode ? "Quitter focus" : "Mode focus"}
-								</Button>
-							</div>
-						</div>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						{/* Toolbar d'insertion */}
-						<div className="flex flex-wrap gap-2 border-b pb-3">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => insertAtCursor("\n## Sous-titre\n\n")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								Titre
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => handleMediaUpload("image", "image/*")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ Image
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => handleMediaUpload("audio", "audio/*")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ Audio
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => handleMediaUpload("pdf", "application/pdf")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ PDF
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => insertAtCursor("\n::video[https://youtube.com/watch?v=ID]\n")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ Vidéo YouTube
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => insertAtCursor('\n::callout[Information importante]{type="info"}\n')}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ Callout
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => insertAtCursor('\n::quote[Citation]{author="Auteur"}\n')}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ Citation
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => addSnippet("table")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ Tableau
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => addSnippet("checklist")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ Checklist
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => addSnippet("cta")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ CTA
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => addSnippet("separator")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								+ Séparateur
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => insertAtCursor("\n```md\nVotre code ici\n```\n")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								<Code2 className="mr-1 h-3.5 w-3.5" />+ Code
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => insertAtCursor("\n- Point 1\n- Point 2\n")}
-								className="shadow-sm bg-white text-neutral-900 hover:bg-neutral-50 active:shadow-inner active:bg-neutral-200"
-							>
-								<List className="mr-1 h-3.5 w-3.5" />+ Liste
-							</Button>
-						</div>
-
-						<div className="rounded-md border bg-muted/20 p-3 space-y-2">
-							<div className="flex flex-col gap-2 md:flex-row md:items-center">
-								<Input
-									value={slashInput}
-									onChange={(e) => setSlashInput(e.target.value)}
-									placeholder="Commande rapide (ex: /callout, /video, /quote)"
-									className="bg-white"
-								/>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => {
-										if (!slashInput.trim()) return;
-										const ok = applySlashCommand(slashInput.trim().split(/\s+/)[0]);
-										if (!ok) toast.error("Commande slash inconnue");
-									}}
-								>
-									Appliquer /commande
-								</Button>
-							</div>
-							<p className="text-xs text-muted-foreground">Commandes: /h2, /h3, /list, /code, /callout, /quote, /video</p>
-							{commandHint ? <p className="text-xs text-primary">{commandHint}</p> : null}
-						</div>
-
-						{/* Éditeur ou Aperçu */}
-						{viewMode === "preview" ? (
-							<div className="min-h-100 rounded-md border p-6 bg-white">
-								{content ? <ArticleContent content={content} /> : <p className="text-muted-foreground">Aperçu vide. Écris du contenu pour le voir ici.</p>}
-							</div>
-						) : viewMode === "split" ? (
-							<div className="grid gap-3 lg:grid-cols-2">
-								<Textarea
-									ref={textareaRef}
-									value={content}
-									onChange={(e) => {
-										setIsDirty(true);
-										setContent(e.target.value);
-									}}
-									placeholder="Commence à écrire ton article en markdown..."
-									rows={20}
-									className="font-mono text-sm bg-neutral-50 shadow-inner"
-									onKeyDown={handleEditorKeyDown}
-									required
-								/>
-								<div className="min-h-100 rounded-md border p-6 bg-white overflow-auto">
-									{content ? <ArticleContent content={content} /> : <p className="text-muted-foreground">Aperçu vide. Écris du contenu pour le voir ici.</p>}
-								</div>
-							</div>
-						) : (
-							<Textarea
-								ref={textareaRef}
-								value={content}
-								onChange={(e) => {
-									setIsDirty(true);
-									setContent(e.target.value);
-								}}
-								placeholder="Commence à écrire ton article en markdown..."
-								rows={20}
-								className="font-mono text-sm bg-neutral-50 shadow-inner"
-								onKeyDown={handleEditorKeyDown}
-								required
-							/>
-						)}
-					</CardContent>
-				</Card>
-
-				{/* Card 3 : Accès + Tags */}
-				<Card>
-					<CardHeader>
-						<CardTitle>Publication</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label>Niveau d&apos;accès requis</Label>
-							<Select
-								value={requiredTier}
-								onValueChange={(value) => {
-									setIsDirty(true);
-									setRequiredTier(value);
-								}}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="FREE">Gratuit · accessible à tous</SelectItem>
-									<SelectItem value="ACADEMY">Académie · ACADEMY et PRIME</SelectItem>
-									<SelectItem value="PRIME">Prime · uniquement PRIME</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-
-						{allTags.length > 0 && (
-							<div className="space-y-2">
-								<Label>Tags ({selectedTagIds.length} sélectionné(s))</Label>
-								<div className="flex flex-wrap gap-2">
-									{allTags.map((tag) => (
-										<button
-											key={tag.id}
-											type="button"
-											onClick={() => toggleTag(tag.id)}
-											className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-												selectedTagIds.includes(tag.id) ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"
-											}`}
-											style={selectedTagIds.includes(tag.id) && tag.color ? { backgroundColor: tag.color, borderColor: tag.color, color: "#fff" } : undefined}
-										>
-											{tag.name}
-										</button>
-									))}
-								</div>
-							</div>
-						)}
-					</CardContent>
-				</Card>
+				<ArticleFormPublicationSection
+					requiredTier={requiredTier}
+					onRequiredTierChange={(value) => {
+						setIsDirty(true);
+						setRequiredTier(value);
+					}}
+					allTags={allTags}
+					selectedTagIds={selectedTagIds}
+					onToggleTag={toggleTag}
+					hierarchicalTagNames={hierarchicalTagNames}
+					effectivePrimaryCategoryPath={effectivePrimaryCategoryPath}
+					onPrimaryCategoryPathChange={(value) => {
+						setIsDirty(true);
+						setPrimaryCategoryPath(value);
+					}}
+				/>
 
 				<div className="flex justify-end gap-3">
 					<Button
 						type="button"
 						variant="secondary"
-						onClick={() => {
-							if (!isEdit) {
-								toast.info("Le brouillon est créé au premier enregistrement");
-								return;
-							}
-							const form = document.querySelector("form");
-							if (form) form.requestSubmit();
-						}}
+						onClick={saveDraftNow}
 						disabled={loading || !isDirty}
 					>
 						<Sparkles className="mr-1 h-4 w-4" />
@@ -908,125 +675,27 @@ export function ArticleForm({ article, allTags = [] }) {
 				</div>
 			</form>
 
-			<aside className={clsx("space-y-4 xl:sticky xl:top-6 h-fit", isFocusMode && "hidden")}>
-				<Card>
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Templates d&apos;article</CardTitle>
-						<CardDescription>Démarre rapidement avec une structure prête à remplir.</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-3">
-						<Select
-							value={templateKey}
-							onValueChange={setTemplateKey}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="guide">Guide pratique</SelectItem>
-								<SelectItem value="news">Annonce / actualite</SelectItem>
-								<SelectItem value="caseStudy">Etude de cas</SelectItem>
-							</SelectContent>
-						</Select>
-						<Button
-							type="button"
-							className="w-full"
-							variant="outline"
-							onClick={applyTemplate}
-						>
-							Appliquer le template
-						</Button>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Indicateurs SEO</CardTitle>
-						<CardDescription>Optimise ton titre et ton resume pour la recherche.</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-3 text-sm">
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground">Titre ({title.length})</span>
-							<Badge variant={titleSeoState === "optimal" ? "default" : titleSeoState === "ok" ? "secondary" : "outline"}>
-								{titleSeoState === "optimal" ? "Optimal" : titleSeoState === "ok" ? "Acceptable" : "A ajuster"}
-							</Badge>
-						</div>
-						<p className="text-xs text-muted-foreground">Cible recommandee: 45 a 65 caracteres.</p>
-						<div className="h-1.5 rounded bg-muted overflow-hidden">
-							<div
-								className={clsx(
-									"h-full transition-all",
-									titleSeoState === "optimal" ? "bg-primary" : titleSeoState === "ok" ? "bg-amber-500" : "bg-muted-foreground",
-								)}
-								style={{ width: `${Math.min(100, (title.length / 80) * 100)}%` }}
-							/>
-						</div>
-
-						<div className="flex items-center justify-between pt-2">
-							<span className="text-muted-foreground">Resume ({excerpt.length})</span>
-							<Badge variant={excerptSeoState === "optimal" ? "default" : excerptSeoState === "ok" ? "secondary" : "outline"}>
-								{excerptSeoState === "optimal" ? "Optimal" : excerptSeoState === "ok" ? "Acceptable" : "A ajuster"}
-							</Badge>
-						</div>
-						<p className="text-xs text-muted-foreground">Meta description recommandee: 120 a 160 caracteres.</p>
-						<div className="h-1.5 rounded bg-muted overflow-hidden">
-							<div
-								className={clsx(
-									"h-full transition-all",
-									excerptSeoState === "optimal" ? "bg-primary" : excerptSeoState === "ok" ? "bg-amber-500" : "bg-muted-foreground",
-								)}
-								style={{ width: `${Math.min(100, (excerpt.length / 220) * 100)}%` }}
-							/>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base flex items-center gap-2">
-							<BookText className="h-4 w-4" />
-							Qualité de contenu
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-3 text-sm">
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground">Auto-save</span>
-							<Badge variant={autosaving ? "secondary" : "outline"}>{autosaving ? "En cours" : "Actif"}</Badge>
-						</div>
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground">Mots</span>
-							<strong>{wordCount}</strong>
-						</div>
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground">Lecture estimée</span>
-							<strong>{readingMinutes} min</strong>
-						</div>
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground">Niveau</span>
-							<Badge variant={contentQuality === "Complet" ? "default" : contentQuality === "Moyen" ? "secondary" : "outline"}>{contentQuality}</Badge>
-						</div>
-						<p className="text-xs text-muted-foreground">
-							{lastSavedAt ? `Derniere sauvegarde: ${lastSavedAt.toLocaleTimeString("fr-FR")}` : "Aucune sauvegarde automatique pour l'instant"}
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="pb-3">
-						<CardTitle className="text-base flex items-center gap-2">
-							<Hash className="h-4 w-4" />
-							Checklist rapide
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-2 text-sm">
-						<p className={title.trim() ? "text-foreground" : "text-muted-foreground"}>• Titre renseigné</p>
-						<p className={slugPreview ? "text-foreground" : "text-muted-foreground"}>• Slug prêt</p>
-						<p className={content.trim().length > 0 ? "text-foreground" : "text-muted-foreground"}>• Contenu ajouté</p>
-						<p className={selectedTagIds.length > 0 ? "text-foreground" : "text-muted-foreground"}>• Tags sélectionnés</p>
-						<p className={coverImage ? "text-foreground" : "text-muted-foreground"}>• Image de couverture (optionnel)</p>
-					</CardContent>
-				</Card>
-			</aside>
+			<ArticleFormSidebarSection
+				isRightPanelOpen={isRightPanelOpen}
+				isFocusMode={isFocusMode}
+				rightPanelSections={rightPanelSections}
+				templateKey={templateKey}
+				onTemplateKeyChange={setTemplateKey}
+				onApplyTemplate={applyTemplate}
+				title={title}
+				titleSeoState={titleSeoState}
+				excerpt={excerpt}
+				excerptSeoState={excerptSeoState}
+				autosaving={autosaving}
+				wordCount={wordCount}
+				readingMinutes={readingMinutes}
+				contentQuality={contentQuality}
+				lastSavedAt={lastSavedAt}
+				slugPreview={slugPreview}
+				content={content}
+				selectedTagIds={selectedTagIds}
+				coverImage={coverImage}
+			/>
 		</div>
 	);
 }

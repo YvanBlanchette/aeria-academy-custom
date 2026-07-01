@@ -18,8 +18,9 @@ export function UsernameSection({ user, publicEnabled, onPublicChange }) {
 	const [copied, setCopied] = useState(false);
 
 	const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://academy.aeriavoyages.com";
+	const currentUsername = username.trim();
 
-	const profileUrl = user.username ? `${baseUrl}/users/${user.username}` : null;
+	const profileUrl = currentUsername ? `${baseUrl}/users/${currentUsername}` : null;
 
 	async function handleSave() {
 		setSaving(true);
@@ -34,7 +35,8 @@ export function UsernameSection({ user, publicEnabled, onPublicChange }) {
 			return;
 		}
 
-		toast.success(result.username ? "Nom d'utilisateur enregistré" : "Nom d'utilisateur retiré");
+		setUsername(result.username || "");
+		toast.success("Nom d'utilisateur enregistré");
 		router.refresh();
 	}
 
@@ -64,11 +66,13 @@ export function UsernameSection({ user, publicEnabled, onPublicChange }) {
 						id="public"
 						checked={publicEnabled}
 						onCheckedChange={onPublicChange}
-						disabled={!user.username}
+						disabled={!currentUsername}
 					/>
 				</div>
 
-				{!user.username && publicEnabled && <p className="text-xs text-amber-600">⚠️ Choisis d&apos;abord un nom d&apos;utilisateur ci-dessous pour activer</p>}
+				{!currentUsername && publicEnabled && (
+					<p className="text-xs text-amber-600">⚠️ Choisis d&apos;abord un nom d&apos;utilisateur ci-dessous pour activer</p>
+				)}
 
 				{/* Username */}
 				<div className="space-y-2 pt-2 border-t">
@@ -87,7 +91,7 @@ export function UsernameSection({ user, publicEnabled, onPublicChange }) {
 						<Button
 							type="button"
 							onClick={handleSave}
-							disabled={saving || username === (user.username || "")}
+							disabled={saving || currentUsername === (user.username || "")}
 						>
 							{saving ? "..." : "Enregistrer"}
 						</Button>

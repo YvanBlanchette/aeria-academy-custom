@@ -14,15 +14,13 @@ import { Loader2, CheckCircle2 } from "lucide-react";
 export function SessionRefresher() {
 	const { data: session, update, status } = useSession();
 	const [state, setState] = useState("loading"); // loading | success | timeout
+	const hasActiveMembership = Boolean(session?.user?.membership && session.user.membership !== "FREE");
 
 	useEffect(() => {
 		if (status !== "authenticated") return;
 
 		// Déjà membre → rien à faire
-		if (session?.user?.membership && session.user.membership !== "FREE") {
-			setState("success");
-			return;
-		}
+		if (hasActiveMembership) return;
 
 		let attempts = 0;
 		const maxAttempts = 8; // 8 × 2s = 16s
@@ -44,7 +42,7 @@ export function SessionRefresher() {
 		}, 2000);
 
 		return () => clearInterval(interval);
-	}, [status]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [status, hasActiveMembership]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	if (state === "loading") {
 		return (
@@ -55,7 +53,7 @@ export function SessionRefresher() {
 		);
 	}
 
-	if (state === "success") {
+	if (state === "success" || hasActiveMembership) {
 		return (
 			<div className="flex items-center justify-center gap-2 text-sm text-green-600">
 				<CheckCircle2 className="h-4 w-4" />

@@ -12,7 +12,7 @@ import { LOCALE_COOKIE_NAME, DEFAULT_LOCALE } from "@/lib/locale";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import Logo from "../logo";
 import { Button } from "../ui/button";
-import { UserButton } from "../ui/user-button";
+import { UserButtonClient as UserButton } from "../ui/user-button-client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 
 const LOCKED_ROUTES = ["/pricing", "/courses", "/about", "/login", "/register", "/dashboard", "/profile", "/contact"];
@@ -25,7 +25,10 @@ export default function Navbar({ locale = "fr", otherLocale }) {
 
 	const locked = LOCKED_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
-	const [scrolledPast, setScrolledPast] = useState(false);
+	const [scrolledPast, setScrolledPast] = useState(() => {
+		if (typeof window === "undefined") return false;
+		return window.scrollY > 40;
+	});
 	const [mobileOpen, setMobileOpen] = useState(false);
 
 	// État final dérivé : pas besoin d'effet de synchronisation
@@ -43,7 +46,6 @@ export default function Navbar({ locale = "fr", otherLocale }) {
 			});
 			ticking = true;
 		};
-		setScrolledPast(window.scrollY > 40);
 		window.addEventListener("scroll", onScroll, { passive: true });
 		return () => window.removeEventListener("scroll", onScroll);
 	}, [locked]);

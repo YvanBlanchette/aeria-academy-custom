@@ -16,6 +16,17 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { togglePublishArticle, deleteArticle } from "@/app/admin/articles/actions";
+import { MdMoreVert } from "react-icons/md";
+
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FaEye, FaFileDownload, FaFileUpload } from "react-icons/fa";
 
 export function ArticleActions({ article }) {
 	const router = useRouter();
@@ -47,48 +58,56 @@ export function ArticleActions({ article }) {
 	return (
 		<>
 			<div className="flex gap-2 flex-wrap">
-				{article.published && (
-					<Button
-						asChild
-						variant="outline"
-					>
-						<a
-							href={`/resources/${article.slug}`}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							<Eye className="mr-1 h-4 w-4" />
-							Voir la page
-						</a>
-					</Button>
-				)}
-
-				<Button
-					type="button"
-					variant={article.published ? "outline" : "default"}
-					onClick={handleToggle}
-					disabled={loading}
-				>
-					{article.published ? (
-						<>
-							<XCircle className="mr-1 h-4 w-4" />
-							Dépublier
-						</>
-					) : (
-						<>
-							<CheckCircle2 className="mr-1 h-4 w-4" />
-							Publier
-						</>
-					)}
-				</Button>
-
-				<Button
-					variant="destructive"
-					onClick={() => setOpen(true)}
-				>
-					<Trash2 className="mr-1 h-4 w-4" />
-					Supprimer
-				</Button>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant="ghost">
+							<MdMoreVert className="h-6 w-6" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuGroup>
+							<DropdownMenuItem>
+								{article.published && (
+									<a
+										href={`/resources/${article.slug}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex items-center"
+									>
+										<FaEye className="mr-1 h-4 w-4" />
+										Voir la page
+									</a>
+								)}
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={handleToggle}
+								disabled={loading}
+							>
+								{article.published ? (
+									<>
+										<FaFileDownload className="mr-1 h-4 w-4" />
+										Dépublier
+									</>
+								) : (
+									<>
+										<FaFileUpload className="mr-1 h-4 w-4" />
+										Publier
+									</>
+								)}
+							</DropdownMenuItem>
+						</DropdownMenuGroup>
+						<DropdownMenuSeparator />
+						<DropdownMenuGroup>
+							<DropdownMenuItem
+								variant="destructive"
+								onClick={() => setOpen(true)}
+							>
+								<Trash2 className="mr-1 h-4 w-4" />
+								Supprimer
+							</DropdownMenuItem>
+						</DropdownMenuGroup>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 
 			<AlertDialog

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BadgeCheck, Bell, Globe, Lock, Mail, Save, Shield, UserCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTheme } from "@/components/theme-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ function initialsOf(user) {
 export function DashboardSettingsClient({ initialUser, initialPreferences }) {
 	const router = useRouter();
 	const { update: updateSession } = useSession();
+	const { theme, setTheme } = useTheme();
 	const [isSavingPrivacy, startSavingPrivacy] = useTransition();
 	const [isSavingPreferences, startSavingPreferences] = useTransition();
 	const [isSavingPassword, startSavingPassword] = useTransition();
@@ -253,9 +255,26 @@ export function DashboardSettingsClient({ initialUser, initialPreferences }) {
 								<Bell className="h-5 w-5" />
 								Préférences
 							</CardTitle>
-							<CardDescription>Langue, fuseau horaire et préférences de notifications.</CardDescription>
+							<CardDescription>Langue, fuseau horaire, apparence et préférences de notifications.</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
+							<div className="space-y-2">
+								<Label>Thème</Label>
+								<Select
+									value={theme}
+									onValueChange={setTheme}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent position="popper">
+										<SelectItem value="light">Clair</SelectItem>
+										<SelectItem value="dark">Sombre</SelectItem>
+										<SelectItem value="system">Système</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
 							<div className="grid gap-4 sm:grid-cols-2">
 								<div className="space-y-2">
 									<Label className="flex items-center gap-2">
@@ -269,7 +288,7 @@ export function DashboardSettingsClient({ initialUser, initialPreferences }) {
 										<SelectTrigger>
 											<SelectValue />
 										</SelectTrigger>
-										<SelectContent>
+										<SelectContent position="popper">
 											<SelectItem value="fr">Français</SelectItem>
 											<SelectItem value="en">English</SelectItem>
 										</SelectContent>
@@ -284,7 +303,7 @@ export function DashboardSettingsClient({ initialUser, initialPreferences }) {
 										<SelectTrigger>
 											<SelectValue />
 										</SelectTrigger>
-										<SelectContent>
+										<SelectContent position="popper">
 											<SelectItem value="America/Toronto">America/Toronto</SelectItem>
 											<SelectItem value="America/Montreal">America/Montreal</SelectItem>
 											<SelectItem value="Europe/Paris">Europe/Paris</SelectItem>

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import DashboardLayoutRight from "@/components/dashboard-layout-right";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArticleForm } from "@/components/admin/article-form";
@@ -24,7 +23,7 @@ export default async function AdminArticleDetailPage({ params }) {
 	const allTags = await prisma.tag.findMany({ orderBy: { name: "asc" } });
 
 	return (
-		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-neutral-100">
+		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto bg-transparent">
 			<div className="mb-4">
 				<Link
 					href="/admin/articles"

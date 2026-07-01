@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { UserSidebar } from "@/components/users/user-sidebar";
+import { getCommunityEnabled } from "@/lib/platform-settings";
+import { MemberLayoutSwitcher } from "@/components/users/member-layout-switcher";
 
 export default async function UserLayout({ children }) {
 	const session = await auth();
 	if (!session?.user?.id) redirect("/login");
+	const communityEnabled = await getCommunityEnabled();
 
 	const user = await prisma.user.findUnique({
 		where: { id: session.user.id },
@@ -15,10 +17,19 @@ export default async function UserLayout({ children }) {
 			email: true,
 			image: true,
 			membership: true,
+			role: true,
+			username: true,
 		},
 	});
 
 	if (!user) redirect("/login");
 
-	return <UserSidebar user={user}>{children}</UserSidebar>;
+	return (
+		<MemberLayoutSwitcher
+			user={user}
+			communityEnabled={communityEnabled}
+		>
+			{children}
+		</MemberLayoutSwitcher>
+	);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { updateProfile, uploadProfileImage } from "@/app/(member)/profile/actions";
+import { normalizePublicVisibility } from "@/lib/profile-visibility";
 import { UsernameSection } from "./username-section";
 
 export function ProfileForm({ profile, user }) {
@@ -21,6 +23,7 @@ export function ProfileForm({ profile, user }) {
 	const [loading, setLoading] = useState(false);
 	const [uploadingImage, setUploadingImage] = useState(false);
 	const [publicProfile, setPublicProfile] = useState(profile?.publicProfile || false);
+	const [visibility, setVisibility] = useState(() => normalizePublicVisibility(profile?.publicVisibility));
 	const [image, setImage] = useState(user?.image || "");
 
 	// Extrait les social links depuis le JSON
@@ -66,6 +69,9 @@ export function ProfileForm({ profile, user }) {
 		const formData = new FormData(e.currentTarget);
 		formData.set("publicProfile", publicProfile.toString());
 		formData.set("image", image);
+		Object.entries(visibility).forEach(([key, value]) => {
+			formData.set(key, String(Boolean(value)));
+		});
 
 		const result = await updateProfile(formData);
 		setLoading(false);
@@ -85,6 +91,18 @@ export function ProfileForm({ profile, user }) {
 			onSubmit={handleSubmit}
 			className="space-y-6"
 		>
+			{user?.username ? (
+				<div className="flex justify-end">
+					<Button
+						asChild
+						variant="outline"
+						size="sm"
+					>
+						<Link href={`/users/${user.username}`}>Voir le profile public</Link>
+					</Button>
+				</div>
+			) : null}
+
 			<Card>
 				<CardHeader>
 					<CardTitle>Compte</CardTitle>
@@ -136,6 +154,11 @@ export function ProfileForm({ profile, user }) {
 						type="hidden"
 						name="image"
 						value={image}
+					/>
+					<input
+						type="hidden"
+						name="coverImage"
+						value={profile?.coverImage || ""}
 					/>
 
 					<div className="space-y-2">
@@ -353,6 +376,46 @@ export function ProfileForm({ profile, user }) {
 				publicEnabled={publicProfile}
 				onPublicChange={setPublicProfile}
 			/>
+
+			{publicProfile ? (
+				<Card>
+					<CardHeader>
+						<CardTitle>Contrôle de visibilité publique</CardTitle>
+						<CardDescription>Choisis exactement les informations affichées sur ton profil public.</CardDescription>
+					</CardHeader>
+					<CardContent className="grid gap-3 md:grid-cols-2">
+						{[
+							["showJobTitle", "Afficher le titre de poste"],
+							["showCompany", "Afficher l'entreprise"],
+							["showBio", "Afficher la bio"],
+							["showWebsite", "Afficher le site web"],
+							["showSocialLinks", "Afficher les réseaux sociaux"],
+							["showAgency", "Afficher les informations d'agence"],
+							["showCommunityStats", "Afficher les statistiques communauté"],
+							["showCommunityPosts", "Afficher les publications récentes"],
+							["showCertificates", "Afficher les certificats"],
+							["showFollowStats", "Afficher followers et abonnements"],
+						].map(([key, label]) => (
+							<label
+								key={key}
+								className="flex items-center gap-2 rounded-md border p-2 text-sm"
+							>
+								<input
+									type="checkbox"
+									checked={Boolean(visibility[key])}
+									onChange={(e) =>
+										setVisibility((prev) => ({
+											...prev,
+											[key]: e.target.checked,
+										}))
+									}
+								/>
+								<span>{label}</span>
+							</label>
+						))}
+					</CardContent>
+				</Card>
+			) : null}
 
 			<div className="flex justify-end">
 				<Button
