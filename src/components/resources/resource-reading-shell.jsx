@@ -69,6 +69,8 @@ export function ResourceReadingShell({
 			style={{
 				"--sidebar-width": "320px",
 				"--sidebar-width-mobile": "320px",
+				"--background": "#f5f5f5",
+				"--learn-header-height": "5.5rem",
 			}}
 		>
 			<Sidebar
@@ -76,7 +78,7 @@ export function ResourceReadingShell({
 				desktopOverlay
 				className="border-r shadow-lg"
 			>
-				<SidebarHeader className="relative flex h-14 items-center justify-center border-b bg-white md:h-16">
+				<SidebarHeader className="relative flex h-18 items-center justify-center border-b bg-white md:h-22.5">
 					<SidebarTrigger
 						variant="ghost"
 						size="icon-sm"
@@ -126,49 +128,58 @@ export function ResourceReadingShell({
 			</Sidebar>
 
 			<SidebarInset className="bg-transparent shadow-none md:m-0 md:rounded-none">
-				<header className="sticky top-0 z-20 border-b bg-background">
-					<div className="mx-auto flex max-w-7xl items-start justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-						<div className="min-w-0 flex-1 space-y-1">
-							<h1 className="line-clamp-2 text-lg font-semibold sm:text-xl">{title}</h1>
-							{breadcrumbSegments.length > 0 ? (
-								<nav aria-label="Fil d'Ariane">
-									<ol className="flex flex-wrap items-center gap-1 text-sm">
-										<li>
-											<Link
-												href="/resources"
-												className="text-muted-foreground hover:text-foreground"
-											>
-												Ressources
-											</Link>
-										</li>
-										{breadcrumbSegments.map((item) => (
-											<li
-												key={item.path}
-												className="inline-flex items-center gap-1"
-											>
-												<ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+				<FloatingCategoriesTrigger />
+
+				<header className="sticky top-0 z-10 border-b bg-white shadow-lg">
+					<div className="mx-auto flex min-h-18 w-[92%] max-w-7xl items-center justify-between gap-3 py-2 sm:w-[90%] md:min-h-22.5 md:gap-4">
+						<div className="min-w-0 flex-1">
+							<div>
+								<h1 className="line-clamp-2 text-base font-bold leading-tight sm:text-xl lg:text-3xl">{title}</h1>
+								{breadcrumbSegments.length > 0 ? (
+									<nav aria-label="Fil d'Ariane" className="mt-0.5">
+										<ol className="flex flex-wrap items-center gap-1 text-sm">
+											<li>
 												<Link
-													href={`/resources?category=${encodeURIComponent(item.path)}`}
+													href="/resources"
 													className="text-muted-foreground hover:text-foreground"
 												>
-													{item.label}
+													Ressources
 												</Link>
 											</li>
-										))}
-									</ol>
-								</nav>
-							) : null}
+											{breadcrumbSegments.map((item) => (
+												<li
+													key={item.path}
+													className="inline-flex items-center gap-1"
+												>
+													<ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+													<Link
+														href={`/resources?category=${encodeURIComponent(item.path)}`}
+														className="text-muted-foreground hover:text-foreground"
+													>
+														{item.label}
+													</Link>
+												</li>
+											))}
+										</ol>
+									</nav>
+								) : null}
+							</div>
 						</div>
 						{user ? (
-							<div className="flex items-center gap-2">
+							<div className="flex shrink-0 items-center gap-2 sm:gap-3">
+								<div className="hidden text-right sm:block">
+									<h2 className="max-w-48 truncate text-sm font-bold md:text-base">{user?.name}</h2>
+									<p className="max-w-52 truncate text-xs text-muted-foreground">{user?.email}</p>
+								</div>
 								<CommunityNotificationsMenu />
-								<UserButtonClient user={user} />
+								<UserButtonClient
+									user={user}
+									size="lg"
+								/>
 							</div>
 						) : null}
 					</div>
 				</header>
-
-				<FloatingCategoriesTrigger />
 
 				<div className="fixed right-3 top-21 z-30 flex w-fit justify-end md:right-4 md:top-26">
 					<Sheet>

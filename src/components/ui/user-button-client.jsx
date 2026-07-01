@@ -31,6 +31,7 @@ export function UserButtonClient({ user: userProp, size }) {
 
 	const avatar = user?.image || "/images/avatar-placeholder.png";
 	const dashboardURL = "/dashboard";
+	const communityURL = "/community";
 	const profileSlug = user?.username || user?.id;
 	const profileURL = profileSlug ? `/users/${profileSlug}` : "/profile";
 
@@ -80,6 +81,9 @@ export function UserButtonClient({ user: userProp, size }) {
 					</DropdownMenuItem>
 					<DropdownMenuItem asChild>
 						<Link href={dashboardURL}>Tableau de bord</Link>
+					</DropdownMenuItem>
+					<DropdownMenuItem asChild>
+						<Link href={communityURL}>Communauté ÆRIA</Link>
 					</DropdownMenuItem>
 					{user?.role === "ADMIN" && (
 						<DropdownMenuItem asChild>
