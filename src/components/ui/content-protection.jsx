@@ -12,7 +12,7 @@ export function ContentProtection({ children }) {
 			if (announcedRef.current) return;
 			announcedRef.current = true;
 			console.log(
-				"%cTOUT MON MATÉRIEL EST PROTÉGÉ PAR LE DROIT D'AUTEUR. TOUTE COPIE EST ILLÉGALE.",
+				"%cATTENTION ! © Tout le contenu de l'Académie de Voyages ÆRIA est protégé par le droit d'auteur. Toute reproduction, copie, distribution ou utilisation non autorisée est strictement interdite et peut entraîner des recours légaux. Merci de respecter les droits de la propriété intellectuelle.",
 				"color:#dc2626;font-size:16px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;",
 			);
 		};

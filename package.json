@@ -10,7 +10,8 @@
 		"prisma:generate": "prisma generate",
 		"prisma": "npx prisma studio",
 		"postinstall": "prisma generate",
-		"pm2": "pm2 restart aeria-academy --update-env"
+		"pm2": "pm2 restart aeria-academy --update-env",
+		"deploy:prod": "cd /var/www/aeria-academy && git pull && npm install && npx prisma migrate deploy && npx prisma generate && npm run build && pm2 restart aeria-academy --update-env"
 	},
 	"dependencies": {
 		"@auth/prisma-adapter": "^2.11.2",
