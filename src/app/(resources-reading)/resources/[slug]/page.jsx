@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArticleContent } from "@/components/articles/article-content";
 import { ResourceReadingShell } from "@/components/resources/resource-reading-shell";
+import { ContentProtection } from "@/components/ui/content-protection";
 
 export async function generateMetadata({ params }) {
 	const { slug } = await params;
@@ -240,167 +241,169 @@ export default async function ArticleDetailPage({ params }) {
 	};
 
 	return (
-		<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
-			<ResourceReadingShell
-				categoryTree={categoryTree}
-				activeCategoryPath={activeCategoryPath}
-				sidebarCategoryResources={sidebarCategoryResources}
-				currentArticleSlug={article.slug}
-				title={article.title}
-				breadcrumbSegments={breadcrumbSegments}
-				user={shellUser}
-			>
-				<article className="min-w-0">
-					{article.coverImage && (
-						<div className="aspect-video w-full overflow-hidden rounded-lg bg-muted mb-8">
-							{/* eslint-disable-next-line @next/next/no-img-element */}
-							<img
-								src={article.coverImage}
-								alt={article.title}
-								className="h-full w-full object-cover"
-							/>
-						</div>
-					)}
-
-					<div className="flex flex-wrap items-center gap-3 mb-6 pb-6 border-b">
-						{article.author.profile?.publicProfile && article.author.username ? (
-							<Link
-								href={`/users/${article.author.username}`}
-								className="flex items-center gap-2 hover:underline"
-							>
-								<Avatar className="h-9 w-9">
-									<AvatarImage
-										src={article.author.image}
-										alt={article.author.name}
-									/>
-									<AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
-								</Avatar>
-								<div>
-									<p className="text-sm font-medium">{article.author.name}</p>
-									{article.author.profile?.jobTitle && <p className="text-xs text-muted-foreground">{article.author.profile.jobTitle}</p>}
-								</div>
-							</Link>
-						) : (
-							<div className="flex items-center gap-2">
-								<Avatar className="h-9 w-9">
-									<AvatarImage
-										src={article.author.image}
-										alt={article.author.name}
-									/>
-									<AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
-								</Avatar>
-								<div>
-									<p className="text-sm font-medium">{article.author.name}</p>
-								</div>
+		<ContentProtection>
+			<div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+				<ResourceReadingShell
+					categoryTree={categoryTree}
+					activeCategoryPath={activeCategoryPath}
+					sidebarCategoryResources={sidebarCategoryResources}
+					currentArticleSlug={article.slug}
+					title={article.title}
+					breadcrumbSegments={breadcrumbSegments}
+					user={shellUser}
+				>
+					<article className="min-w-0">
+						{article.coverImage && (
+							<div className="aspect-video w-full overflow-hidden rounded-lg bg-muted mb-8">
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								<img
+									src={article.coverImage}
+									alt={article.title}
+									className="h-full w-full object-cover"
+								/>
 							</div>
 						)}
 
-						<div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-							<Calendar className="h-3.5 w-3.5" />
-							<time>
-								{new Date(article.publishedAt).toLocaleDateString("fr-FR", {
-									day: "numeric",
-									month: "long",
-									year: "numeric",
-								})}
-							</time>
-						</div>
-					</div>
-
-					<div className="flex flex-wrap gap-2 mb-8">
-						{article.tags.map(({ tag }) => (
-							<Link
-								key={tag.id}
-								href={`/resources?tag=${tag.slug}`}
-							>
-								<Badge
-									variant="outline"
-									className="hover:bg-muted cursor-pointer"
-									style={
-										tag.color
-											? {
-													backgroundColor: tag.color,
-													color: "#fff",
-													borderColor: tag.color,
-												}
-											: undefined
-									}
+						<div className="flex flex-wrap items-center gap-3 mb-6 pb-6 border-b">
+							{article.author.profile?.publicProfile && article.author.username ? (
+								<Link
+									href={`/users/${article.author.username}`}
+									className="flex items-center gap-2 hover:underline"
 								>
-									{tag.name}
+									<Avatar className="h-9 w-9">
+										<AvatarImage
+											src={article.author.image}
+											alt={article.author.name}
+										/>
+										<AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
+									</Avatar>
+									<div>
+										<p className="text-sm font-medium">{article.author.name}</p>
+										{article.author.profile?.jobTitle && <p className="text-xs text-muted-foreground">{article.author.profile.jobTitle}</p>}
+									</div>
+								</Link>
+							) : (
+								<div className="flex items-center gap-2">
+									<Avatar className="h-9 w-9">
+										<AvatarImage
+											src={article.author.image}
+											alt={article.author.name}
+										/>
+										<AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
+									</Avatar>
+									<div>
+										<p className="text-sm font-medium">{article.author.name}</p>
+									</div>
+								</div>
+							)}
+
+							<div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+								<Calendar className="h-3.5 w-3.5" />
+								<time>
+									{new Date(article.publishedAt).toLocaleDateString("fr-FR", {
+										day: "numeric",
+										month: "long",
+										year: "numeric",
+									})}
+								</time>
+							</div>
+						</div>
+
+						<div className="flex flex-wrap gap-2 mb-8">
+							{article.tags.map(({ tag }) => (
+								<Link
+									key={tag.id}
+									href={`/resources?tag=${tag.slug}`}
+								>
+									<Badge
+										variant="outline"
+										className="hover:bg-muted cursor-pointer"
+										style={
+											tag.color
+												? {
+														backgroundColor: tag.color,
+														color: "#fff",
+														borderColor: tag.color,
+													}
+												: undefined
+										}
+									>
+										{tag.name}
+									</Badge>
+								</Link>
+							))}
+							{article.requiredTier !== "FREE" && (
+								<Badge
+									variant={tierBadge.variant}
+									className="gap-1"
+								>
+									{article.requiredTier === "PRIME" && <Crown className="h-3 w-3" />}
+									{tierBadge.label}
 								</Badge>
-							</Link>
-						))}
-						{article.requiredTier !== "FREE" && (
-							<Badge
-								variant={tierBadge.variant}
-								className="gap-1"
-							>
-								{article.requiredTier === "PRIME" && <Crown className="h-3 w-3" />}
-								{tierBadge.label}
-							</Badge>
-						)}
-					</div>
+							)}
+						</div>
 
-					<div id="resource-reading-content">
-						<ArticleContent content={article.content} />
-					</div>
+						<div id="resource-reading-content">
+							<ArticleContent content={article.content} />
+						</div>
 
-					<div className="mt-12 pt-6 border-t">
-						<Link
-							href="/resources"
-							className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							Retour aux ressources
-						</Link>
-					</div>
-				</article>
-			</ResourceReadingShell>
-
-			{relatedArticles.length > 0 ? (
-				<section className="max-w-7xl mx-auto pt-2">
-					<div className="mb-4 flex items-center justify-between">
-						<h2 className="text-xl font-semibold">Ressources similaires</h2>
-						<Link
-							href="/resources"
-							className="text-sm text-muted-foreground hover:underline"
-						>
-							Voir toute la bibliothèque
-						</Link>
-					</div>
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-						{relatedArticles.map(({ article: related, access: relatedAccess }) => (
+						<div className="mt-12 pt-6 border-t">
 							<Link
-								key={related.id}
-								href={`/resources/${related.slug}`}
-								className="group"
+								href="/resources"
+								className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 							>
-								<Card className="h-full overflow-hidden transition-all hover:shadow-lg">
-									<CardContent className="p-4 space-y-2">
-										<div className="flex flex-wrap gap-1.5">
-											{related.tags.slice(0, 2).map(({ tag }) => (
-												<Badge
-													key={tag.id}
-													variant="outline"
-													className="text-xs"
-												>
-													{tag.name}
-												</Badge>
-											))}
-										</div>
-										<h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">{related.title}</h3>
-										<p className="text-xs text-muted-foreground line-clamp-2">{related.excerpt || "Ouvre cette ressource pour découvrir le contenu."}</p>
-										<div className="pt-2 border-t text-xs text-muted-foreground flex items-center justify-between">
-											<span>{related.author.name}</span>
-											<span>{relatedAccess.allowed ? "Accès" : "Premium"}</span>
-										</div>
-									</CardContent>
-								</Card>
+								<ArrowLeft className="h-4 w-4" />
+								Retour aux ressources
 							</Link>
-						))}
-					</div>
-				</section>
-			) : null}
-		</div>
+						</div>
+					</article>
+				</ResourceReadingShell>
+
+				{relatedArticles.length > 0 ? (
+					<section className="max-w-7xl mx-auto pt-2">
+						<div className="mb-4 flex items-center justify-between">
+							<h2 className="text-xl font-semibold">Ressources similaires</h2>
+							<Link
+								href="/resources"
+								className="text-sm text-muted-foreground hover:underline"
+							>
+								Voir toute la bibliothèque
+							</Link>
+						</div>
+						<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+							{relatedArticles.map(({ article: related, access: relatedAccess }) => (
+								<Link
+									key={related.id}
+									href={`/resources/${related.slug}`}
+									className="group"
+								>
+									<Card className="h-full overflow-hidden transition-all hover:shadow-lg">
+										<CardContent className="p-4 space-y-2">
+											<div className="flex flex-wrap gap-1.5">
+												{related.tags.slice(0, 2).map(({ tag }) => (
+													<Badge
+														key={tag.id}
+														variant="outline"
+														className="text-xs"
+													>
+														{tag.name}
+													</Badge>
+												))}
+											</div>
+											<h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">{related.title}</h3>
+											<p className="text-xs text-muted-foreground line-clamp-2">{related.excerpt || "Ouvre cette ressource pour découvrir le contenu."}</p>
+											<div className="pt-2 border-t text-xs text-muted-foreground flex items-center justify-between">
+												<span>{related.author.name}</span>
+												<span>{relatedAccess.allowed ? "Accès" : "Premium"}</span>
+											</div>
+										</CardContent>
+									</Card>
+								</Link>
+							))}
+						</div>
+					</section>
+				) : null}
+			</div>
+		</ContentProtection>
 	);
 }
